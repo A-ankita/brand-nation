@@ -1,0 +1,66 @@
+[
+  {
+    "id": 1,
+    "name": "Classic Oxford Shirt",
+    "category": "Shirts",
+    "price": 1499,
+    "img": "https://images.unsplash.com/photo-1598032895397-b9472444bf93?w=700&q=85",
+    "tag": "BESTSELLER"
+  },
+  {
+    "id": 2,
+    "name": "Essential Cotton Tee",
+    "category": "T-Shirts",
+    "price": 799,
+    "img": "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=700&q=85",
+    "tag": "EVERYDAY"
+  },
+  {
+    "id": 3,
+    "name": "Relaxed Denim Jeans",
+    "category": "Jeans",
+    "price": 1899,
+    "img": "https://images.unsplash.com/photo-1542272604-787c3835535d?w=700&q=85",
+    "tag": "NEW"
+  },
+  {
+    "id": 4,
+    "name": "Everyday Denim Jacket",
+    "category": "Jackets",
+    "price": 2499,
+    "img": "https://images.unsplash.com/photo-1544923246-77307dd654cb?w=700&q=85",
+    "tag": "NEW"
+  },
+  {
+    "id": 5,
+    "name": "Linen Blend Shirt",
+    "category": "Shirts",
+    "price": 1699,
+    "img": "https://images.unsplash.com/photo-1603252109303-2751441dd157?w=700&q=85",
+    "tag": "SMART CASUAL"
+  },
+  {
+    "id": 6,
+    "name": "Premium Crew Neck Tee",
+    "category": "T-Shirts",
+    "price": 999,
+    "img": "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?w=700&q=85",
+    "tag": "ESSENTIAL"
+  },
+  {
+    "id": 7,
+    "name": "Straight Fit Jeans",
+    "category": "Jeans",
+    "price": 1999,
+    "img": "https://images.unsplash.com/photo-1511196044526-5cb3bcb7071b?w=700&q=85",
+    "tag": "CLASSIC"
+  },
+  {
+    "id": 8,
+    "name": "Layering Overshirt",
+    "category": "Jackets",
+    "price": 2299,
+    "img": "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=700&q=85",
+    "tag": "SEASONAL"
+  }
+]
