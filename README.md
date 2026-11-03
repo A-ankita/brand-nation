@@ -1,10 +1,7 @@
-# Brand Nation Website
+# Brand Nation — no public prices
 
-GitHub Pages-ready static catalogue.
+This build shows **Enquire for price** on all catalogue products and removes prices from WhatsApp enquiry messages.
 
-## Publish
-1. Upload `index.html`, `.nojekyll`, and the `images` folder to the root of your GitHub repository.
-2. In Settings > Pages choose Deploy from a branch, `main`, `/ (root)`.
-3. Visit https://a-ankita.github.io/brand-nation/ after deployment succeeds.
+## Update your existing GitHub Pages website
 
-Do not upload the ZIP alone; extract it first.
+Because your existing product images are already in the root of `A-ankita/brand-nation`, you only need to replace **index.html** from this ZIP. The ZIP also includes all images at repository root in case you need to restore any. Do not upload the ZIP itself.
