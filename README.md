@@ -1,7 +1,2 @@
-# Brand Nation — no public prices
-
-This build shows **Enquire for price** on all catalogue products and removes prices from WhatsApp enquiry messages.
-
-## Update your existing GitHub Pages website
-
-Because your existing product images are already in the root of `A-ankita/brand-nation`, you only need to replace **index.html** from this ZIP. The ZIP also includes all images at repository root in case you need to restore any. Do not upload the ZIP itself.
+Brand Nation - November 2026 new arrivals, no public prices.
+Upload index.html and all .webp image files to the ROOT of the A-ankita/brand-nation GitHub repository (main branch). Do not delete existing files. GitHub Pages custom domain: brand-nation.in.
