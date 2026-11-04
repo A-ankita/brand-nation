@@ -71,12 +71,16 @@ function syncDriveCatalogue(){
     if(!payload || payload.error || !Array.isArray(payload.items)){console.warn('Drive catalogue:',payload&&payload.error);finish(false);return;}
     const incoming=payload.items.filter(item=>item&&/^[a-zA-Z0-9_-]{10,}$/.test(item.id)).map(item=>({
       id:'drive-'+item.id,name:String(item.name||'New Arrival').slice(0,100),
-      type:'New Arrivals',image:'https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200',
+      type:String(item.category || 'New Arrivals').trim(),image:'https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200',
       gallery:[],colors:'Please confirm available colours',price:null,fromDrive:true
     }));
     for(let i=products.length-1;i>=0;i--)if(products[i].fromDrive)products.splice(i,1);
     products.unshift(...incoming);
-    categoryNames.includes('New Arrivals')||categoryNames.splice(1,0,'New Arrivals');
+    incoming.forEach(item => {
+  if (!categoryNames.includes(item.type)) {
+    categoryNames.push(item.type);
+  }
+});
     drawCategoryTiles();renderProducts();finish(true);
   };
   script.onerror=()=>finish(false);
