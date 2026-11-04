@@ -1,5 +1,5 @@
 /** Brand Nation Google Drive image catalogue. Deploy as a Google Apps Script Web App. */
-const FOLDER_ID = 'PASTE_YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE';
+const FOLDER_ID = '1Z2D2lmaY3CxQSg0Yb7CzDpzvUXSeCm_D';
 
 function doGet(e) {
   const callback = (e && e.parameter && e.parameter.callback) || '';
