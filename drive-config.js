@@ -1,3 +1,2 @@
-// Paste your deployed Google Apps Script WEB APP URL between the quotes.
-// Example: https://script.google.com/macros/s/AKfycb.../exec
-window.BRAND_NATION_DRIVE_SYNC_URL = "https://script.google.com/macros/s/AKfycbwN48aFjHG_PufySvYMlNKzQUMpBy0aXHwlHJ_ibx-TPPyTAGssw4eRGgbVSxC-HjsH/exec";;
+
+window.BRAND_NATION_DRIVE_SYNC_URL = "https://script.google.com/macros/s/AKfycbzUEVux7l1p6TiaWRSFDMZTxbYlbt-7cH8PzJiUwPp4ONqupvVMSXK-AM3I6Iyh6sQ/exec";
