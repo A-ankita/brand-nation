@@ -1,0 +1,47 @@
+BRAND NATION — GOOGLE DRIVE CATALOGUE SYNC
+==========================================
+
+This website retains all existing catalogue photos and WhatsApp enquiry features.
+Once connected, new image files placed DIRECTLY in your Google Drive catalogue folder
+appear as 'New Arrivals' on the website, usually on next page load or within 5 minutes.
+
+ONE-TIME SETUP (Google account required)
+
+1. In Google Drive, create a folder named "Brand Nation Catalogue".
+2. Right-click the folder > Share > General access > Anyone with the link > Viewer.
+   IMPORTANT: Product images will be publicly visible on your shop.
+   If new images do not load, also make sure uploaded image files are shared publicly
+   (folder sharing alone does not always change access for existing files).
+3. Open the folder. Copy the long ID between /folders/ and the next ? in its URL.
+4. Visit https://script.google.com/ and create a New project.
+5. Replace the contents of Code.gs with the text from GoogleDriveSync.gs.
+6. Replace PASTE_YOUR_GOOGLE_DRIVE_FOLDER_ID_HERE with your folder ID.
+7. Deploy > New deployment > select type Web app.
+   Execute as: Me. Who has access: Anyone.
+   Authorize access to Drive when Google asks. Use only your own trusted script.
+8. Copy the Web app URL (ends with /exec).
+9. Open drive-config.js in Notepad. Paste the URL inside the quotes:
+   window.BRAND_NATION_DRIVE_SYNC_URL = 'https://script.google.com/macros/s/.../exec';
+10. Save drive-config.js. Upload the ENTIRE extracted website folder to Netlify
+    (Netlify site > Deploys > drag and drop folder), OR commit these changed files
+    to your connected GitHub repository if Netlify deploys from GitHub.
+
+AFTER SETUP
+- Copy JPG, PNG, WEBP images into your Google Drive folder.
+- Images are automatically listed as separate products under 'New Arrivals'.
+- The image filename becomes the product name: e.g. 'Blue Denim Shirt.jpg' -> 'Blue Denim Shirt'.
+- Prices remain 'Enquire for price'; WhatsApp enquiry uses 8130687619.
+- The website checks for new images on page load and every 5 minutes while open.
+- To remove a product, remove its picture from the folder; refresh the site.
+- Files in subfolders are NOT included. Duplicate images will make duplicate products.
+
+LIMITATIONS
+- Google Drive is not a dedicated image hosting/CDN service. Public image links
+  can sometimes be blocked or throttled by Google, especially with high traffic.
+- This setup does not automatically generate descriptions, prices, size inventory,
+  or group multiple pictures of the same item. Each image is a separate product.
+- Changes to Apps Script code require redeployment to a new version. Changing
+  drive-config.js requires publishing updated website files once.
+- Do not put private images in this public catalogue folder.
+- If your Google account administrator disallows public folder links or public
+  Apps Script web apps, this integration will not work with that account.
