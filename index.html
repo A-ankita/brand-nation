@@ -130,8 +130,8 @@ let selectedCategory='All Products';
 
 function renderProducts() {
   const selected = products
-    .filter(p=>p.availability!=='hidden')
     .map((p, i) => ({ p, i }))
+    .filter(({p})=>p.availability!=='hidden')
     .filter(({ p }) =>
       selectedCategory === 'All Products' ||
       p.type === selectedCategory
