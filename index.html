@@ -102,17 +102,142 @@ const categoryTiles=document.getElementById('categoryTiles');
 function drawCategoryTiles(){categoryTiles.innerHTML=categoryNames.map((name,i)=>`<a class="cat${i===0?' active':''}" href="#shop" data-category="${escapeHtml(name)}" aria-current="${i===0?'true':'false'}">${escapeHtml(name)}<small>${i===0?'VIEW ALL':'EXPLORE'}</small></a>`).join('');}
 drawCategoryTiles();
 let selectedCategory='All Products';
-function renderProducts(){
-const selected=products.map((p,i)=>({p,i})).filter(({p})=>selectedCategory==='All Products'||p.type===selectedCategory);
-document.getElementById('collectionTitle').textContent=selectedCategory;
-document.getElementById('products').innerHTML=selected.map(({p,i})=>`<article class="product"><div class="photo" style="background:${p.bg||'#f4f1eb'}">${p.image?`<img src="${p.image}" loading="lazy" alt="${escapeHtml(p.name)}">`:p.illustration}</div><div class="info"><div class="muted" style="font-size:12px;margin-bottom:9px">${escapeHtml(p.type)}</div><h3>${escapeHtml(p.name)}</h3><div class="price">${'Enquire for price'}</div>${p.colors?`<p class="muted" style="font-size:13px;line-height:1.5">Colours: ${escapeHtml(p.colors)}</p>`:''}${p.gallery?`<div class="thumbs">${[p.image,...p.gallery].map((img,j)=>`<button type="button" aria-label="View product photo ${j+1}" onclick="this.closest('.product').querySelector('.photo img').src='${img}'"><img src="${img}" alt="" loading="lazy"></button>`).join('')}</div>`:''} ${!['watches', 'watch', 'bags', 'bag', 'handbags']   .includes(String(p.type || '').trim().toLowerCase()) ? `   <label for="size${i}" class="muted">     Preferred size (confirm availability)   </label>   <select id="size${i}">     <option value="">Choose size</option>     <option>M</option>     <option>L</option>     <option>XL</option>     <option>XXL</option>   </select> ` : ''}  function order(i) {   const p = products[i];   const size = document.getElementById('size' + i)?.value || '';   const note = document.getElementById('note' + i)?.value.trim() || '';    const msg =     `Hi Brand Nation! I'm interested in ${p.name}.` +     (size ? `
-Preferred size: ${size}.` : '') +     (note ? `
-My message: ${note}` : '') +     `
-Please confirm availability, price and ordering details.` +     `
-Product: https://brand-nation.in/#shop`;    window.open(     'https://wa.me/' + WHATSAPP_NUMBER +     '?text=' + encodeURIComponent(msg),     '_blank',     'noopener'   ); }<label class="enquiry-label" for="note${i}">Your message to the owner (optional)</label><textarea class="enquiry-note" id="note${i}" maxlength="500" placeholder="Ask about colour, fit, availability, delivery or anything else..."></textarea><p class="enquiry-hint">Your message will be included when you open WhatsApp.</p><button class="pill" onclick="order(${i})">ENQUIRE ON WHATSAPP</button></div></article>`).join('');
+
+
+function renderProducts() {
+  const selected = products
+    .map((p, i) => ({ p, i }))
+    .filter(({ p }) =>
+      selectedCategory === 'All Products' ||
+      p.type === selectedCategory
+    );
+
+  document.getElementById('collectionTitle').textContent =
+    selectedCategory;
+
+  document.getElementById('products').innerHTML =
+    selected.map(({ p, i }) => {
+
+      const noSize = [
+        'watch', 'watches',
+        'bag', 'bags', 'handbags'
+      ].includes(String(p.type || '').trim().toLowerCase());
+
+      const sizeHtml = noSize ? '' : `
+        <label for="size${i}" class="muted">
+          Preferred size (confirm availability)
+        </label>
+        <select id="size${i}">
+          <option value="">Choose size</option>
+          <option>M</option>
+          <option>L</option>
+          <option>XL</option>
+          <option>XXL</option>
+        </select>
+      `;
+
+      const photoHtml = p.image
+        ? `<img src="${p.image}" loading="lazy"
+             alt="${escapeHtml(p.name)}">`
+        : (p.illustration || '');
+
+      const galleryHtml = p.gallery && p.gallery.length
+        ? `<div class="thumbs">
+            ${[p.image, ...p.gallery].filter(Boolean)
+              .map((img, j) => `
+                <button type="button"
+                  aria-label="View product photo ${j + 1}"
+                  onclick="this.closest('.product')
+                    .querySelector('.photo img').src='${img}'">
+                  <img src="${img}" alt="" loading="lazy">
+                </button>
+              `).join('')}
+          </div>`
+        : '';
+
+      return `
+        <article class="product">
+          <div class="photo"
+            style="background:${p.bg || '#f4f1eb'}">
+            ${photoHtml}
+          </div>
+
+          <div class="info">
+            <div class="muted" style="font-size:12px;margin-bottom:9px">
+              ${escapeHtml(p.type)}
+            </div>
+
+            <h3>${escapeHtml(p.name)}</h3>
+            <div class="price">Enquire for price</div>
+
+            ${p.colors ? `
+              <p class="muted" style="font-size:13px;line-height:1.5">
+                Colours: ${escapeHtml(p.colors)}
+              </p>
+            ` : ''}
+
+            ${galleryHtml}
+            ${sizeHtml}
+
+            <label class="enquiry-label" for="note${i}">
+              Your message to the owner (optional)
+            </label>
+
+            <textarea class="enquiry-note" id="note${i}"
+              maxlength="500"
+              placeholder="Ask about colour, availability, delivery or anything else..."></textarea>
+
+            <p class="enquiry-hint">
+              Your message will be included when you open WhatsApp.
+            </p>
+
+            <button class="pill" onclick="order(${i})">
+              ENQUIRE ON WHATSAPP
+            </button>
+          </div>
+        </article>
+      `;
+    }).join('');
 }
-categoryTiles.addEventListener('click',event=>{const link=event.target.closest('[data-category]');if(!link)return;selectedCategory=link.dataset.category;categoryTiles.querySelectorAll('[data-category]').forEach(el=>{const active=el===link;el.classList.toggle('active',active);el.setAttribute('aria-current',String(active))});renderProducts();});
+
+categoryTiles.addEventListener('click', event => {
+  const link = event.target.closest('[data-category]');
+  if (!link) return;
+
+  selectedCategory = link.dataset.category;
+
+  categoryTiles.querySelectorAll('[data-category]')
+    .forEach(el => {
+      const active = el === link;
+      el.classList.toggle('active', active);
+      el.setAttribute('aria-current', String(active));
+    });
+
+  renderProducts();
+});
+
 renderProducts();
 syncDriveCatalogue();
-setInterval(syncDriveCatalogue,5*60*1000);
-function order(i){const p=products[i],size=document.getElementById('size'+i)?.value || '';const note=document.getElementById('note'+i).value.trim();const msg=`Hi Brand Nation! I'm interested in ${p.name}.${size?'\nPreferred size: '+size+'.':''}${note?'\nMy message: '+note:''}\nsize=document.Please confirm availability, price and orderinggetElementById('size'+i)?.value || ''; details.\nProduct: https://brand-nation.in/#shop`;window.open('https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(msg),'_blank','noopener')} </script></body></html>
+setInterval(syncDriveCatalogue, 5 * 60 * 1000);
+
+function order(i) {
+  const p = products[i];
+  const size = document.getElementById('size' + i)?.value || '';
+  const note = document.getElementById('note' + i)?.value.trim() || '';
+
+  const msg =
+    `Hi Brand Nation! I'm interested in ${p.name}.` +
+    (size ? `\nPreferred size: ${size}.` : '') +
+    (note ? `\nMy message: ${note}` : '') +
+    `\nPlease confirm availability, price and ordering details.` +
+    `\nProduct: https://brand-nation.in/#shop`;
+
+  window.open(
+    'https://wa.me/' + WHATSAPP_NUMBER +
+      '?text=' + encodeURIComponent(msg),
+    '_blank',
+    'noopener'
+  );
+}
+
+</script></body></html>
