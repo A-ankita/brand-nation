@@ -69,6 +69,27 @@ const products=[...newProducts,...colors.map(([name,c,bg],i)=>({id:'classic-'+i,
 // Google Drive catalogue integration. Configure drive-config.js after deploying the Apps Script.
 const DRIVE_SYNC_URL=(window.BRAND_NATION_DRIVE_SYNC_URL||'').trim();
 const driveProductIds=new Set();
+let adminCatalogue={};
+function applyAdminCatalogue(){
+ for(const p of products){
+  const a=adminCatalogue[p.id];
+  if(a){if(a.name)p.name=a.name;if(a.category)p.type=a.category;if(a.image)p.image=a.image;p.availability=a.availability||'enquire';p.pricePaise=a.pricePaise;}
+ }
+ for(const [id,a] of Object.entries(adminCatalogue)){
+  if(!products.some(p=>p.id===id)&&a&&a.name){
+   products.push({id,name:a.name,type:a.category||'New Arrivals',image:a.image||'',pricePaise:a.pricePaise,availability:a.availability||'enquire',colors:''});
+  }
+ }
+}
+async function loadAdminCatalogue(){
+ try{
+  const r=await fetch('catalogue-admin.json?t='+Date.now(),{cache:'no-store'});
+  if(!r.ok)throw Error('Catalogue unavailable');
+  const v=await r.json();if(!v||typeof v!=='object'||Array.isArray(v))throw Error('Invalid catalogue');
+  adminCatalogue=v;applyAdminCatalogue();renderProducts();
+ }catch(e){console.warn('Admin catalogue unavailable:',e.message);}
+}
+
 let driveSyncLoading=false;
 function syncDriveCatalogue(){
   if(!DRIVE_SYNC_URL || driveSyncLoading) return;
@@ -87,6 +108,7 @@ function syncDriveCatalogue(){
     }));
     for(let i=products.length-1;i>=0;i--)if(products[i].fromDrive)products.splice(i,1);
     products.unshift(...incoming);
+    applyAdminCatalogue();
     incoming.forEach(item => {
   if (!categoryNames.includes(item.type)) {
     categoryNames.push(item.type);
@@ -108,6 +130,7 @@ let selectedCategory='All Products';
 
 function renderProducts() {
   const selected = products
+    .filter(p=>p.availability!=='hidden')
     .map((p, i) => ({ p, i }))
     .filter(({ p }) =>
       selectedCategory === 'All Products' ||
@@ -170,7 +193,7 @@ function renderProducts() {
             </div>
 
             <h3>${escapeHtml(p.name)}</h3>
-            <div class="price">Enquire for price</div>
+            <div class="price">${p.availability==='out_of_stock'?'Out of stock':'Enquire for price'}</div>
 
             ${p.colors ? `
               <p class="muted" style="font-size:13px;line-height:1.5">
@@ -225,6 +248,7 @@ categoryTiles.addEventListener('click', event => {
 
 renderProducts();
 syncDriveCatalogue();
+loadAdminCatalogue();
 setInterval(syncDriveCatalogue, 5 * 60 * 1000);
 
 function order(i) {
