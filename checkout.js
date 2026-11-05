@@ -29,6 +29,6 @@ rz.on('payment.failed',function(r){notice('Payment failed: '+(r.error?.descripti
 rz.open();
 }catch(err){notice(err.message,true);}finally{button.disabled=!cart.length;}
 }
-window.BrandNationCheckout={openCart,closeCart,addFromProduct:i=>{if(add(i)){openCart();notice('Added to cart.');}},buyNow:i=>{cart.length=0;if(add(i)){openCart();checkout();}},changeQty:(i,n)=>{if(!cart[i])return;cart[i].quantity+=n;if(cart[i].quantity<=0)cart.splice(i,1);if(cart[i]&&cart[i].quantity>10)cart[i].quantity=10;render();},remove:i=>{cart.splice(i,1);render();},checkout};
+window.BrandNationCheckout={openCart,closeCart,addFromProduct:i=>{if(add(i)){openCart();notice('Added to cart.');}},buyNow:i=>{const item=selected(i);if(!item)return;cart.length=0;cart.push(item);render();openCart();checkout();},changeQty:(i,n)=>{if(!cart[i])return;cart[i].quantity+=n;if(cart[i].quantity<=0)cart.splice(i,1);if(cart[i]&&cart[i].quantity>10)cart[i].quantity=10;render();},remove:i=>{cart.splice(i,1);render();},checkout};
 render();
 })();
