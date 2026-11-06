@@ -28,6 +28,7 @@ const PRICE_PAISE = {
   'classic-3': 230000
 };
 
+  
 const cart=[];
 const money=n=>'₹'+(n/100).toLocaleString('en-IN');
 const el=id=>document.getElementById(id);
