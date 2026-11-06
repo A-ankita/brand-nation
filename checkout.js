@@ -2,7 +2,7 @@
 (function(){
 'use strict';
 const API='https://brand-nation-payments.vercel.app';
-const LIVE_CHECKOUT_ENABLED=false; // Enable only after production readiness checks.
+const LIVE_CHECKOUT_ENABLED=true; // Enable only after production readiness checks.
 const PRICE_PAISE={'checked-shirts':200000};
 const cart=[];
 const money=n=>'₹'+(n/100).toLocaleString('en-IN');
