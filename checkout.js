@@ -1,7 +1,8 @@
-/* Brand Nation checkout: TEST MODE ONLY. Prices must match PRODUCT_CATALOG_JSON on Vercel. */
+/* Brand Nation live checkout preparation. Prices must match PRODUCT_CATALOG_JSON on Vercel. Keep disabled until live verification is complete. */
 (function(){
 'use strict';
 const API='https://brand-nation-payments.vercel.app';
+const LIVE_CHECKOUT_ENABLED=false; // Enable only after production readiness checks.
 const PRICE_PAISE={'checked-shirts':200000};
 const cart=[];
 const money=n=>'₹'+(n/100).toLocaleString('en-IN');
@@ -13,21 +14,23 @@ function selected(i){const p=products[i];if(!p||!available(p)){notice('This prod
 function add(i){const item=selected(i);if(!item)return false;const existing=cart.find(x=>x.id===item.id&&x.size===item.size);if(existing){if(existing.quantity>=10){alert('Maximum 10 per product and size');return false;}existing.quantity++;}else cart.push(item);render();return true;}
 function openCart(){const e=el('bn-cart-overlay');e.classList.add('open');e.setAttribute('aria-hidden','false');render();}
 function closeCart(){const e=el('bn-cart-overlay');e.classList.remove('open');e.setAttribute('aria-hidden','true');}
-function render(){el('bn-cart-count').textContent=cart.reduce((n,x)=>n+x.quantity,0);el('bn-cart-lines').innerHTML=cart.length?cart.map((x,i)=>'<div class="bn-cart-line"><div><strong>'+safe(x.name)+'</strong><p>Size: '+safe(x.size||'N/A')+' · '+money(PRICE_PAISE[x.id])+'</p><button type="button" onclick="BrandNationCheckout.changeQty('+i+',-1)">−</button> '+x.quantity+' <button type="button" onclick="BrandNationCheckout.changeQty('+i+',1)">+</button></div><button type="button" onclick="BrandNationCheckout.remove('+i+')">Remove</button></div>').join(''):'Your cart is empty.';el('bn-cart-total').textContent='Total (test): '+money(cart.reduce((n,x)=>n+PRICE_PAISE[x.id]*x.quantity,0));el('bn-checkout-button').disabled=!cart.length;}
+function render(){el('bn-cart-count').textContent=cart.reduce((n,x)=>n+x.quantity,0);el('bn-cart-lines').innerHTML=cart.length?cart.map((x,i)=>'<div class="bn-cart-line"><div><strong>'+safe(x.name)+'</strong><p>Size: '+safe(x.size||'N/A')+' · '+money(PRICE_PAISE[x.id])+'</p><button type="button" onclick="BrandNationCheckout.changeQty('+i+',-1)">−</button> '+x.quantity+' <button type="button" onclick="BrandNationCheckout.changeQty('+i+',1)">+</button></div><button type="button" onclick="BrandNationCheckout.remove('+i+')">Remove</button></div>').join(''):'Your cart is empty.';el('bn-cart-total').textContent='Total: '+money(cart.reduce((n,x)=>n+PRICE_PAISE[x.id]*x.quantity,0));el('bn-checkout-button').disabled=!cart.length || !LIVE_CHECKOUT_ENABLED;}
 async function checkout(){
 if(!cart.length)return;
-const button=el('bn-checkout-button');button.disabled=true;notice('Creating test payment order...');
+if(!LIVE_CHECKOUT_ENABLED){notice('Online payments are temporarily unavailable while we complete our live payment checks. Please enquire on WhatsApp.',true);return;}
+const button=el('bn-checkout-button');button.disabled=true;notice('Creating secure payment order...');
 try{
 const response=await fetch(API+'/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart.map(({id,size,quantity})=>({id,size,quantity}))})});
 const order=await response.json();if(!response.ok)throw Error(order.error||'Could not create order');
 if(!window.Razorpay)throw Error('Razorpay checkout could not load');
-const rz=new Razorpay({key:order.key_id,amount:order.amount,currency:'INR',name:'Brand Nation',description:'Test order — no real payment',order_id:order.order_id,handler:async function(payment){
+if(typeof order.key_id!=='string'||!order.key_id.startsWith('rzp_live_'))throw Error('Live payment configuration is not ready');
+const rz=new Razorpay({key:order.key_id,amount:order.amount,currency:'INR',name:'Brand Nation',description:'Brand Nation Online Order',order_id:order.order_id,handler:async function(payment){
 notice('Verifying payment...');
-try{const r=await fetch(API+'/api/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payment)});const v=await r.json();if(!r.ok||!v.verified||!v.paid)throw Error(v.error||v.message||'Payment not captured');cart.length=0;render();notice('Payment verified and captured (TEST MODE). Order: '+v.order_id);}catch(err){notice('Payment verification failed: '+err.message,true);}
-},modal:{ondismiss:function(){notice('Test checkout closed.')}}});
+try{const r=await fetch(API+'/api/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payment)});const v=await r.json();if(!r.ok||!v.verified||!v.paid)throw Error(v.error||v.message||'Payment not captured');cart.length=0;render();notice('Payment successful. Order confirmed: '+v.order_id);}catch(err){notice('Payment verification failed: '+err.message,true);}
+},modal:{ondismiss:function(){notice('Checkout closed.')}}});
 rz.on('payment.failed',function(r){notice('Payment failed: '+(r.error?.description||'Please try again'),true);});
 rz.open();
-}catch(err){notice(err.message,true);}finally{button.disabled=!cart.length;}
+}catch(err){notice(err.message,true);}finally{button.disabled=!cart.length || !LIVE_CHECKOUT_ENABLED;}
 }
 window.BrandNationCheckout={openCart,closeCart,addFromProduct:i=>{if(add(i)){openCart();notice('Added to cart.');}},buyNow:i=>{const item=selected(i);if(!item)return;cart.length=0;cart.push(item);render();openCart();checkout();},changeQty:(i,n)=>{if(!cart[i])return;cart[i].quantity+=n;if(cart[i].quantity<=0)cart.splice(i,1);if(cart[i]&&cart[i].quantity>10)cart[i].quantity=10;render();},remove:i=>{cart.splice(i,1);render();},checkout};
 render();
