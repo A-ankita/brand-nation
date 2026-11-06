@@ -3,7 +3,31 @@
 'use strict';
 const API='https://brand-nation-payments.vercel.app';
 const LIVE_CHECKOUT_ENABLED=true; // Enable only after production readiness checks.
-const PRICE_PAISE={'checked-shirts':200000};
+
+const PRICE_PAISE = {
+  'checked-shirts': 220000,
+  'new-striped-shirts': 220000,
+  'striped-shirts': 220000,
+  'new-pinstripe-shirts': 220000,
+  'winter-addition-6': 200000,
+  'winter-nov04-3': 200000,
+  'denim-shirts': 250000,
+  'nov04-denim-shirts': 250000,
+  'winter-addition-5': 250000,
+  'knitwear': 300000,
+  'winter-addition-3': 300000,
+  'winter-addition-7': 300000,
+  'winter-nov04-1': 300000,
+  'winter-nov04-2': 300000,
+  'winter-nov04-4': 300000,
+  'new-v-neck-sweaters': 300000,
+  'contrast-polos': 230000,
+  'classic-0': 230000,
+  'classic-1': 230000,
+  'classic-2': 230000,
+  'classic-3': 230000
+};
+
 const cart=[];
 const money=n=>'₹'+(n/100).toLocaleString('en-IN');
 const el=id=>document.getElementById(id);
