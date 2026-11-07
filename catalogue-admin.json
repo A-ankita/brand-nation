@@ -1,1 +1,9 @@
-{}
+{
+  "Polo": {
+    "name": "Polo Knitwear",
+    "category": "Sweater",
+    "pricePaise": 250000,
+    "availability": "available",
+    "image": ""
+  }
+}
