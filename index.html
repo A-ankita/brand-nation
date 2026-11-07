@@ -89,6 +89,23 @@ async function loadAdminCatalogue(){
  }catch(e){console.warn('Admin catalogue unavailable:',e.message);}
 }
 
+// Suggest SEO-friendly titles from imported filenames, without inventing fabric or fit.
+function driveProductTitle(item){
+ const category=String(item.category||'New Arrivals').trim();
+ let raw=String(item.name||'').replace(/^BN-GH-[a-f0-9]{16}-/i,'').replace(/\.(?:jpe?g|png|webp|gif|avif)$/i,'').replace(/[_-]+/g,' ').replace(/\b(?:img|image|photo|dsc|whatsapp)\b/gi,' ').replace(/\b[a-f0-9]{12,}\b/gi,' ').replace(/\s+/g,' ').trim();
+ const categoryLabel={'Jackets':"Men's Jackets",'Shirts':"Men's Shirts",'T-shirts & Polos':"Men's T-Shirts & Polos",'Knitwear':"Men's Knitwear",'Sweatshirts & Hoodies':"Men's Sweatshirts & Hoodies",'Bottomwear':"Men's Bottomwear",'Co-ord Sets':"Men's Co-ord Sets",'Watches':'Watches','Bags':'Bags','New Arrivals':'New Arrivals'};
+ const fallback=categoryLabel[category]||category;
+ const lower=raw.toLowerCase();
+ // A filename must contain a meaningful clothing term before we use it as a title.
+ const keywords=['jacket','hoodie','sweatshirt','shirt','polo','t-shirt','tshirt','knitwear','sweater','jogger','jean','trouser','trackpant','tracksuit','co-ord','watch','bag','zip','henley','cardigan'];
+ const hasKeyword=keywords.some(k=>lower.includes(k));
+ const clean=raw.replace(/\b(?:bn|gh|new|latest|arrival|collection|range|image|photo)\b/gi,' ').replace(/\b\d{5,}\b/g,' ').replace(/\s+/g,' ').trim();
+ if(!hasKeyword||clean.length<5)return fallback;
+ const words=clean.split(' ').slice(0,8).map(w=>/^\d+$/.test(w)?w:w.charAt(0).toUpperCase()+w.slice(1).toLowerCase());
+ let title=words.join(' ');
+ if(!/^(men'?s|women'?s|unisex)/i.test(title) && !['Watches','Bags'].includes(category))title="Men's "+title;
+ return title.slice(0,100);
+}
 let driveSyncLoading=false;
 function syncDriveCatalogue(){
   if(!DRIVE_SYNC_URL || driveSyncLoading) return;
@@ -101,7 +118,7 @@ function syncDriveCatalogue(){
   window[cb]=function(payload){
     if(!payload || payload.error || !Array.isArray(payload.items)){console.warn('Drive catalogue:',payload&&payload.error);finish(false);return;}
     const incoming=payload.items.filter(item=>item&&/^[a-zA-Z0-9_-]{10,}$/.test(item.id)).map(item=>({
-      id:'drive-'+item.id,name:String(item.category||'New Arrivals').trim().slice(0,100),
+      id:'drive-'+item.id,name:driveProductTitle(item),
       type:String(item.category || 'New Arrivals').trim(),image:'https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200',
       gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true
     }));
