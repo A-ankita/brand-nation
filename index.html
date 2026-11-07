@@ -192,6 +192,7 @@ function renderProducts() {
             </div>
 
             <h3>${escapeHtml(p.name)}</h3>
+            ${['polo-knitwear','latest-button-neck-knitwear','nov26-knit-polos'].includes(p.id) ? `<p style="margin:4px 0 12px"><a href="/products/${p.id}.html" style="text-decoration:underline;font-size:13px">VIEW PRODUCT DETAILS</a></p>` : ''}
             <div class="price">${p.availability==='out_of_stock'?'Out of stock':'Enquire for price'}</div>
 
             ${p.colors ? `
