@@ -192,7 +192,7 @@ function renderProducts() {
             </div>
 
             <h3>${escapeHtml(p.name)}</h3>
-            ${['polo-knitwear','latest-button-neck-knitwear','nov26-knit-polos'].includes(p.id) ? `<p style="margin:4px 0 12px"><a href="/products/${p.id}.html" style="text-decoration:underline;font-size:13px">VIEW PRODUCT DETAILS</a></p>` : ''}
+            ${["winter-addition-1","winter-addition-2","winter-addition-3","winter-addition-4","winter-addition-5","winter-addition-6","winter-addition-7","winter-nov04-1","winter-nov04-2","winter-nov04-3","winter-nov04-4","boss-tracksuits","zara-henleys","polo-knitwear","gym-joggers","denim-shirts","zara-crewnecks","striped-shirts","blue-jeans","new-striped-shirts","new-v-neck-sweaters","new-blue-denim-jeans","new-pinstripe-shirts","nov04-contrast-joggers","nov04-denim-shirts","nov04-black-tracksuit","nov04-textured-crewnecks","latest-henley-collection","latest-button-neck-knitwear","latest-piped-joggers","nov26-tracksets","nov26-henleys","nov26-knit-polos","joggers-sl130","joggers-sl131","joggers-sl121","joggers-sl135","essentials-hoodies","bear-knitwear","windbreakers","zip-hoodies","zip-jackets","checked-shirts","knitwear","contrast-polos","graphic-sweatshirts"].includes(p.id) ? `<p style="margin:4px 0 12px"><a href="/products/${p.id}.html" style="text-decoration:underline;font-size:13px">VIEW PRODUCT DETAILS</a></p>` : ''}
             <div class="price">${p.availability==='out_of_stock'?'Out of stock':'Enquire for price'}</div>
 
             ${p.colors ? `
