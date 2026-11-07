@@ -23,7 +23,7 @@ const PRICE_PAISE = {
   'new-v-neck-sweaters': 300000,
   'polo-knitwear': 300000,
   'latest-button-neck-knitwear': 300000,
-  'nov26-knit-polos': 300000,
+  'nov26-knit-polos': 230000,
   'contrast-polos': 230000,
   'classic-0': 230000,
   'classic-1': 230000,
