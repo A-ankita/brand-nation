@@ -275,7 +275,7 @@ function order(i) {
 <aside class="bn-drawer" role="dialog" aria-modal="true" aria-label="Shopping cart">
 <div class="bn-drawer-head"><h2>Your Cart</h2><button type="button" aria-label="Close cart" onclick="BrandNationCheckout.closeCart()">×</button></div>
 <div id="bn-cart-lines"></div><div id="bn-cart-total" class="bn-cart-total"></div>
-<button type="button" id="bn-checkout-button" class="bn-checkout" onclick="BrandNationCheckout.checkout()">PROCEED TO PAYMENT</button>
+<label for="bn-customer-email" style="display:block;margin:16px 0 6px">Email for order confirmation</label><input id="bn-customer-email" type="email" autocomplete="email" required placeholder="you@example.com" style="width:100%;padding:12px;border:1px solid #ccc;margin-bottom:12px"><button type="button" id="bn-checkout-button" class="bn-checkout" onclick="BrandNationCheckout.checkout()">PROCEED TO PAYMENT</button>
 <p id="bn-cart-message" class="bn-cart-message" aria-live="polite"></p>
 <p class="bn-pay-note">Online payments are temporarily unavailable. Please enquire on WhatsApp.</p>
 </aside></div>
