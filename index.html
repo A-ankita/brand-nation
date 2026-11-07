@@ -144,6 +144,14 @@ drawCategoryTiles();
 let selectedCategory='All Products';
 
 
+function productSeoDescription(p){
+ const name=String(p.name||p.type||'Product').trim();
+ const category=String(p.type||'clothing').trim();
+ const colours=String(p.colors||'').trim();
+ const verifiedColours=colours && !/please confirm|ask|enquir|unknown|not specified/i.test(colours);
+ const suffix=verifiedColours?' Available colours: '+colours.replace(/[·]/g,', ')+'.':'';
+ return 'Explore '+name+' in our '+category+' collection at Brand Nation, Noida. Check available sizes, colours and stock, or enquire on WhatsApp.'+suffix;
+}
 function renderProducts() {
   const selected = products
     .map((p, i) => ({ p, i }))
@@ -177,7 +185,7 @@ function renderProducts() {
 
       const photoHtml = p.image
         ? `<img src="${p.image}" loading="lazy"
-             alt="${escapeHtml(p.name)}">`
+             alt="${escapeHtml(p.name+' | Brand Nation '+p.type)}">`
         : (p.illustration || '');
 
       const galleryHtml = p.gallery && p.gallery.length
@@ -207,6 +215,7 @@ function renderProducts() {
             </div>
 
             <h3>${escapeHtml(p.name)}</h3>
+            <p class="muted" style="font-size:13px;line-height:1.55;margin:7px 0 10px">${escapeHtml(productSeoDescription(p))}</p>
             ${["winter-addition-1","winter-addition-2","winter-addition-3","winter-addition-4","winter-addition-5","winter-addition-6","winter-addition-7","winter-nov04-1","winter-nov04-2","winter-nov04-3","winter-nov04-4","boss-tracksuits","zara-henleys","polo-knitwear","gym-joggers","denim-shirts","zara-crewnecks","striped-shirts","blue-jeans","new-striped-shirts","new-v-neck-sweaters","new-blue-denim-jeans","new-pinstripe-shirts","nov04-contrast-joggers","nov04-denim-shirts","nov04-black-tracksuit","nov04-textured-crewnecks","latest-henley-collection","latest-button-neck-knitwear","latest-piped-joggers","nov26-tracksets","nov26-henleys","nov26-knit-polos","joggers-sl130","joggers-sl131","joggers-sl121","joggers-sl135","essentials-hoodies","bear-knitwear","windbreakers","zip-hoodies","zip-jackets","checked-shirts","knitwear","contrast-polos","graphic-sweatshirts"].includes(p.id) ? `<p style="margin:4px 0 12px"><a href="/products/${p.id}.html" style="text-decoration:underline;font-size:13px">VIEW PRODUCT DETAILS</a></p>` : ''}
             <div class="price">${p.availability==='out_of_stock'?'Out of stock':(Number.isSafeInteger(Number(p.pricePaise)) && Number(p.pricePaise)>0 ? new Intl.NumberFormat('en-IN',{style:'currency',currency:'INR',maximumFractionDigits:0}).format(Number(p.pricePaise)/100) : 'Enquire for price')}</div>
 
