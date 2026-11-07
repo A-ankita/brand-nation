@@ -46,15 +46,17 @@ function render(){el('bn-cart-count').textContent=cart.reduce((n,x)=>n+x.quantit
 async function checkout(){
 if(!cart.length)return;
 if(!LIVE_CHECKOUT_ENABLED){notice('Online payments are temporarily unavailable while we complete our live payment checks. Please enquire on WhatsApp.',true);return;}
+const email=el('bn-customer-email');if(!email || !email.checkValidity()){notice('Please enter a valid email address for your order confirmation.',true);email?.focus();return;}
+const customerEmail=email.value.trim();
 const button=el('bn-checkout-button');button.disabled=true;notice('Creating secure payment order...');
 try{
-const response=await fetch(API+'/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart.map(({id,size,quantity})=>({id,size,quantity}))})});
+const response=await fetch(API+'/api/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:cart.map(({id,size,quantity})=>({id,size,quantity})),customer:{email:customerEmail}})});
 const order=await response.json();if(!response.ok)throw Error(order.error||'Could not create order');
 if(!window.Razorpay)throw Error('Razorpay checkout could not load');
 if(typeof order.key_id!=='string'||!order.key_id.startsWith('rzp_live_'))throw Error('Live payment configuration is not ready');
 const rz=new Razorpay({key:order.key_id,amount:order.amount,currency:'INR',name:'Brand Nation',description:'Brand Nation Online Order',order_id:order.order_id,handler:async function(payment){
 notice('Verifying payment...');
-try{const r=await fetch(API+'/api/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payment)});const v=await r.json();if(!r.ok||!v.verified||!v.paid)throw Error(v.error||v.message||'Payment not captured');cart.length=0;render();notice('Payment successful. Order confirmed: '+v.order_id);}catch(err){notice('Payment verification failed: '+err.message,true);}
+try{const r=await fetch(API+'/api/verify-payment',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payment)});const v=await r.json();if(!r.ok||!v.verified||!v.paid)throw Error(v.error||v.message||'Payment not captured');cart.length=0;render();notice('Payment successful. Order confirmed: '+v.order_id+'. A confirmation email will be sent to '+customerEmail+'.');}catch(err){notice('Payment verification failed: '+err.message,true);}
 },modal:{ondismiss:function(){notice('Checkout closed.')}}});
 rz.on('payment.failed',function(r){notice('Payment failed: '+(r.error?.description||'Please try again'),true);});
 rz.open();
