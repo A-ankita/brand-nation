@@ -17,13 +17,21 @@ function doGet(e) {
     const root = DriveApp.getFolderById(FOLDER_ID);
     const items = [];
     const seen = {};
+    const categoryCounts = {};
+    const categoryFolders = [];
     function scan(folder, category, depth) {
       if (depth > MAX_DEPTH || items.length >= MAX_IMAGES) return;
+      if (depth === 1) {
+        categoryFolders.push(category);
+        if (!(category in categoryCounts)) categoryCounts[category] = 0;
+      }
       const files = folder.getFiles();
       while (files.hasNext() && items.length < MAX_IMAGES) {
         const file = files.next();
         if (!/^image\//i.test(file.getMimeType()) || seen[file.getId()]) continue;
         seen[file.getId()] = true;
+        const bucket = category || 'New Arrivals';
+        categoryCounts[bucket] = (categoryCounts[bucket] || 0) + 1;
         const name = file.getName().replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
         items.push({
           id:file.getId(),
@@ -41,7 +49,7 @@ function doGet(e) {
     }
     scan(root, '', 0);
     items.sort((a,b) => b.updated - a.updated);
-    result = {items:items};
+    result = {items:items, categoryCounts:categoryCounts, categoryFolders:categoryFolders, total:items.length, limitReached:items.length >= MAX_IMAGES};
   } catch(err) {
     result = {error:String(err.message || err)};
   }
