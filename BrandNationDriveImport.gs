@@ -94,3 +94,58 @@ function resetBrandNationImportCursor() {
   // Only resets progress, never deletes images; existing copies are still skipped.
   PropertiesService.getScriptProperties().deleteProperty('BN_IMPORT_CURSOR');
 }
+
+/**
+ * Automatic import: run startBrandNationAutoImport() once from the editor.
+ * A time-based trigger processes 15 files per run, then removes itself when
+ * complete or if a batch makes no progress. Run stopBrandNationAutoImport()
+ * at any time to cancel. Never resets BN_IMPORT_CURSOR.
+ */
+function startBrandNationAutoImport() {
+  stopBrandNationAutoImport();
+  ScriptApp.newTrigger('brandNationAutoImportTick').timeBased().everyMinutes(1).create();
+  Logger.log('Automatic import scheduled every minute. Current cursor: ' +
+    (PropertiesService.getScriptProperties().getProperty('BN_IMPORT_CURSOR') || '0'));
+}
+
+function brandNationAutoImportTick() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(1000)) {
+    Logger.log('Previous import still running; skipping overlapping execution.');
+    return;
+  }
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const before = Number(props.getProperty('BN_IMPORT_CURSOR') || 0);
+    const total = bnImagePaths().length;
+    if (before >= total) {
+      stopBrandNationAutoImport();
+      Logger.log('Complete: ' + total + '/' + total + '. Automatic trigger removed.');
+      return;
+    }
+    importBrandNationImages();
+    const after = Number(props.getProperty('BN_IMPORT_CURSOR') || 0);
+    if (after >= total) {
+      stopBrandNationAutoImport();
+      Logger.log('Complete: ' + total + '/' + total + '. Automatic trigger removed.');
+    } else if (after <= before) {
+      stopBrandNationAutoImport();
+      Logger.log('Import made no progress at ' + after + '/' + total +
+        '. Automatic trigger removed to avoid repeated failures. Check execution log.');
+    } else {
+      Logger.log('Automatic import progress: ' + after + '/' + total);
+    }
+  } catch (err) {
+    stopBrandNationAutoImport();
+    Logger.log('Automatic import stopped due to error: ' + err);
+    throw err;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function stopBrandNationAutoImport() {
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'brandNationAutoImportTick')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+}
