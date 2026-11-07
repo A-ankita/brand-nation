@@ -1,0 +1,32 @@
+name: Sync catalogue product pages and sitemap
+on:
+  push:
+    branches: [main]
+    paths:
+      - catalogue-admin.json
+      - scripts/sync_catalogue.py
+      - .github/workflows/sync-catalogue.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Generate catalogue pages
+        run: python scripts/sync_catalogue.py
+      - name: Publish generated pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add products/ sitemap.xml
+          if ! git diff --cached --quiet; then
+            git commit -m "Auto-sync product pages and sitemap"
+            git push
+          fi
