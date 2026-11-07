@@ -29,8 +29,10 @@ function bnCategory(path) {
 
 function bnImagePaths() {
   const url = 'https://api.github.com/repos/' + BN_REPO + '/git/trees/main?recursive=1';
-  const response = UrlFetchApp.fetch(url, {muteHttpExceptions:true,headers:{Accept:'application/vnd.github+json', 'User-Agent':'BrandNationDriveImport'}});
-  if (response.getResponseCode() !== 200) throw new Error('GitHub tree API: ' + response.getResponseCode() + ' ' + response.getContentText().slice(0,180));
+  const token = PropertiesService.getScriptProperties().getProperty('BN_GITHUB_TOKEN');
+  if (!token) throw new Error('Set BN_GITHUB_TOKEN in Apps Script Project Settings → Script properties before importing.');
+  const response = UrlFetchApp.fetch(url, {muteHttpExceptions:true,headers:{Accept:'application/vnd.github+json', 'User-Agent':'BrandNationDriveImport', Authorization:'Bearer '+token}});
+  if (response.getResponseCode() !== 200) throw new Error('GitHub tree API returned HTTP ' + response.getResponseCode() + '. Check token permissions and API rate limits.');
   const tree = JSON.parse(response.getContentText());
   if (tree.truncated) throw new Error('GitHub tree listing was truncated; import stopped to avoid missing images.');
   return tree.tree.filter(f => f.type === 'blob' && /\.(jpe?g|png|webp|gif|avif)$/i.test(f.path))
