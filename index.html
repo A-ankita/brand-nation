@@ -101,7 +101,7 @@ function syncDriveCatalogue(){
   window[cb]=function(payload){
     if(!payload || payload.error || !Array.isArray(payload.items)){console.warn('Drive catalogue:',payload&&payload.error);finish(false);return;}
     const incoming=payload.items.filter(item=>item&&/^[a-zA-Z0-9_-]{10,}$/.test(item.id)).map(item=>({
-      id:'drive-'+item.id,name:String(item.name||'New Arrival').replace(/^BN-GH-[a-f0-9]{16}-/i,'').replace(/\.(?:jpe?g|png|webp|gif|avif)$/i,'').replace(/[_-]+/g,' ').trim().slice(0,100),
+      id:'drive-'+item.id,name:String(item.category||'New Arrivals').trim().slice(0,100),
       type:String(item.category || 'New Arrivals').trim(),image:'https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200',
       gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true
     }));
