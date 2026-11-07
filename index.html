@@ -72,10 +72,10 @@ let adminCatalogue={};
 function applyAdminCatalogue(){
  for(const p of products){
   const a=adminCatalogue[p.id];
-  if(a){if(a.name)p.name=a.name;if(a.category)p.type=a.category;if(a.image)p.image=a.image;p.availability=a.availability||'enquire';p.pricePaise=a.pricePaise;}
+  if(a){if(a.name)p.name=a.name;if(a.category)p.type=a.category;if(a.image)p.image=a.image;if(a.colors)p.colors=a.colors;if(Array.isArray(a.sizes))p.sizes=a.sizes;p.availability=a.availability||'enquire';p.pricePaise=a.pricePaise;}
  }
  for(const [id,a] of Object.entries(adminCatalogue)){
-  if(!products.some(p=>p.id===id)&&a&&a.name){
+  if(!products.some(p=>p.id===id)&&a&&a.name&&!id.startsWith('drive-')){
    products.push({id,name:a.name,type:a.category||'New Arrivals',image:a.image||'',pricePaise:a.pricePaise,availability:a.availability||'enquire',colors:''});
   }
  }
@@ -103,7 +103,7 @@ function syncDriveCatalogue(){
     const incoming=payload.items.filter(item=>item&&/^[a-zA-Z0-9_-]{10,}$/.test(item.id)).map(item=>({
       id:'drive-'+item.id,name:String(item.name||'New Arrival').slice(0,100),
       type:String(item.category || 'New Arrivals').trim(),image:'https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200',
-      gallery:[],colors:'Please confirm available colours',price:null,fromDrive:true
+      gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true
     }));
     for(let i=products.length-1;i>=0;i--)if(products[i].fromDrive)products.splice(i,1);
     products.unshift(...incoming);
@@ -147,16 +147,14 @@ function renderProducts() {
         'bag', 'bags', 'handbags'
       ].includes(String(p.type || '').trim().toLowerCase());
 
-      const sizeHtml = noSize ? '' : `
+      const sizeOptions = Array.isArray(p.sizes) ? p.sizes : ['M','L','XL','XXL'];
+      const sizeHtml = noSize || !sizeOptions.length ? '' : `
         <label for="size${i}" class="muted">
           Preferred size (confirm availability)
         </label>
         <select id="size${i}">
           <option value="">Choose size</option>
-          <option>M</option>
-          <option>L</option>
-          <option>XL</option>
-          <option>XXL</option>
+          ${sizeOptions.map(s=>`<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('')}
         </select>
       `;
 
