@@ -116,10 +116,19 @@ function groupDrivePhotos(items){
   const explicit=String(item.productGroup||'').trim();
   const key=explicit ? category+'::'+explicit : 'single::'+item.id;
   const url='https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200';
-  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:explicit||driveProductTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
+  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:driveProductTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
   else groups.get(key).gallery.push(url);
  }
- return [...groups.values()];
+ const grouped=[...groups.values()];
+ for(const p of grouped){
+  if(p.gallery.length){
+   const first=items.find(item=>('drive-'+item.id)===p.id);
+   const raw=String(first?.name||'').replace(/^BN-GH-[a-f0-9]{16}-/i,'').replace(/\.(webp|jpg|jpeg|png)$/i,'').replace(/[-_]+/g,' ').replace(/\s+\d+$/,'').trim();
+   const candidate=raw.replace(/\b(?:nov\d+|latest|new|range|gallery)\b/gi,' ').replace(/\s+/g,' ').trim();
+   if(candidate && /henley|knit|polo|shirt|jacket|hoodie|sweater|tracksuit|jogger/i.test(candidate))p.name= 'Men\'s '+candidate.replace(/\b\w/g,c=>c.toUpperCase());
+  }
+ }
+ return grouped;
 }
 let driveSyncLoading=false;
 function syncDriveCatalogue(){
@@ -141,7 +150,7 @@ function syncDriveCatalogue(){
     categoryNames.push(item.type);
   }
 });
-    drawCategoryTiles();renderProducts();finish(true);
+    drawCategoryTiles();renderProducts();if(new URLSearchParams(location.search).has('product'))restoreProductDetail();finish(true);
   };
   script.onerror=()=>finish(false);
   script.src=DRIVE_SYNC_URL+(DRIVE_SYNC_URL.includes('?')?'&':'?')+'callback='+cb+'&_='+Date.now();
@@ -163,6 +172,18 @@ function productSeoDescription(p){
  const suffix=verifiedColours?' Available colours: '+colours.replace(/[·]/g,', ')+'.':'';
  return 'Explore '+name+' in our '+category+' collection at Brand Nation, Noida. Check available sizes, colours and stock, or enquire on WhatsApp.'+suffix;
 }
+function openProductDetail(i){
+ const p=products[i];if(!p)return;
+ const images=[p.image,...(p.gallery||[])].filter(Boolean);
+ const noSize=['watch','watches','bag','bags'].includes(String(p.type||'').toLowerCase());
+ const detail=document.getElementById('bn-product-detail');
+ detail.innerHTML=`<div class="bn-detail-inner"><button class="bn-detail-back" type="button" onclick="closeProductDetail()">← BACK TO COLLECTION</button><div class="bn-detail-grid"><div><img id="bn-detail-main" class="bn-detail-main" src="${escapeHtml(images[0]||'')}" alt="${escapeHtml(p.name)}"><div class="bn-detail-thumbnails">${images.map((url,j)=>`<button type="button" data-bn-image="${j}" aria-label="Show image ${j+1}" class="${j===0?'active':''}"><img src="${escapeHtml(url)}" alt=""></button>`).join('')}</div></div><div class="bn-detail-copy"><span class="muted">${escapeHtml(p.type)}</span><h1>${escapeHtml(p.name)}</h1><p>${escapeHtml(productSeoDescription(p))}</p><strong>${p.availability==='out_of_stock'?'Out of stock':'Enquire on WhatsApp for price'}</strong>${noSize?'':`<label for="size${i}">Preferred size (confirm availability)</label><select id="size${i}"><option value="">Choose size</option>${(p.sizes||['M','L','XL','XXL']).map(sz=>`<option value="${escapeHtml(sz)}">${escapeHtml(sz)}</option>`).join('')}</select>`}<label for="note${i}">Your message (optional)</label><textarea class="enquiry-note" id="note${i}" placeholder="Ask about colours, availability or delivery"></textarea><div class="bn-detail-actions"><button type="button" onclick="BrandNationCheckout.addFromProduct(${i})">ADD TO CART</button><button type="button" onclick="BrandNationCheckout.buyNow(${i})">BUY NOW</button></div><button class="pill" type="button" onclick="order(${i})">ENQUIRE ON WHATSAPP</button></div></div></div>`;
+ detail.querySelectorAll('[data-bn-image]').forEach(btn=>btn.addEventListener('click',()=>{detail.querySelector('#bn-detail-main').src=images[Number(btn.dataset.bnImage)];detail.querySelectorAll('[data-bn-image]').forEach(b=>b.classList.toggle('active',b===btn));}));
+ document.getElementById('shop').hidden=true;detail.hidden=false;detail.scrollIntoView({block:'start'});history.pushState({bnProduct:p.id},'', '?product='+encodeURIComponent(p.id)+'#product-detail');
+}
+function closeProductDetail(){document.getElementById('bn-product-detail').hidden=true;document.getElementById('shop').hidden=false;history.pushState({},'',location.pathname+'#shop');document.getElementById('shop').scrollIntoView({block:'start'});}
+function restoreProductDetail(){const id=new URLSearchParams(location.search).get('product');if(id){const i=products.findIndex(p=>p.id===id);if(i>=0){openProductDetail(i);return;}}document.getElementById('bn-product-detail').hidden=true;document.getElementById('shop').hidden=false;}
+window.addEventListener('popstate',()=>{const id=new URLSearchParams(location.search).get('product');if(!id){document.getElementById('bn-product-detail').hidden=true;document.getElementById('shop').hidden=false;}else{const i=products.findIndex(p=>p.id===id);if(i>=0)openProductDetail(i);}});
 function renderProducts() {
   const selected = products
     .map((p, i) => ({ p, i }))
@@ -199,7 +220,7 @@ function renderProducts() {
              alt="${escapeHtml(p.name+' | Brand Nation '+p.type)}">`
         : (p.illustration || '');
 
-      const galleryHtml = p.gallery && p.gallery.length
+      const galleryHtml = !p.fromDrive && p.gallery && p.gallery.length
         ? `<div class="thumbs">
             ${[p.image, ...p.gallery].filter(Boolean)
               .map((img, j) => `
@@ -215,9 +236,8 @@ function renderProducts() {
 
       return `
         <article class="product">
-          <div class="photo"
-            style="background:${p.bg || '#f4f1eb'}">
-            ${photoHtml}
+          <div class="photo"\n            style="background:${p.bg || '#f4f1eb'}">
+            ${p.fromDrive ? `<button type="button" class="bn-card-photo" onclick="openProductDetail(${i})" aria-label="View ${escapeHtml(p.name)}">${photoHtml}</button>` : photoHtml}
           </div>
 
           <div class="info">
@@ -225,7 +245,7 @@ function renderProducts() {
               ${escapeHtml(p.type)}
             </div>
 
-            <h3>${escapeHtml(p.name)}</h3>
+            <h3>${escapeHtml(p.name)}</h3>${p.fromDrive ? `<button class="bn-view-details" type="button" onclick="openProductDetail(${i})">VIEW PRODUCT & PHOTOS →</button>` : ''}
             <p class="muted" style="font-size:13px;line-height:1.55;margin:7px 0 10px">${escapeHtml(productSeoDescription(p))}</p>
             ${["winter-addition-1","winter-addition-2","winter-addition-3","winter-addition-4","winter-addition-5","winter-addition-6","winter-addition-7","winter-nov04-1","winter-nov04-2","winter-nov04-3","winter-nov04-4","boss-tracksuits","zara-henleys","polo-knitwear","gym-joggers","denim-shirts","zara-crewnecks","striped-shirts","blue-jeans","new-striped-shirts","new-v-neck-sweaters","new-blue-denim-jeans","new-pinstripe-shirts","nov04-contrast-joggers","nov04-denim-shirts","nov04-black-tracksuit","nov04-textured-crewnecks","latest-henley-collection","latest-button-neck-knitwear","latest-piped-joggers","nov26-tracksets","nov26-henleys","nov26-knit-polos","joggers-sl130","joggers-sl131","joggers-sl121","joggers-sl135","essentials-hoodies","bear-knitwear","windbreakers","zip-hoodies","zip-jackets","checked-shirts","knitwear","contrast-polos","graphic-sweatshirts"].includes(p.id) ? `<p style="margin:4px 0 12px"><a href="/products/${p.id}.html" style="text-decoration:underline;font-size:13px">VIEW PRODUCT DETAILS</a></p>` : ''}
             <div class="price">${p.availability==='out_of_stock'?'Out of stock':'Enquire on WhatsApp for price'}</div>
@@ -237,9 +257,9 @@ function renderProducts() {
             ` : ''}
 
             ${galleryHtml}
-            ${sizeHtml}
+            ${p.fromDrive ? '':sizeHtml}
 
-            <label class="enquiry-label" for="note${i}">
+            ${p.fromDrive ? '':`<label class="enquiry-label" for="note${i}">
               Your message to the owner (optional)
             </label>
 
@@ -258,7 +278,7 @@ function renderProducts() {
             <p class="bn-pay-note">Online payments are being prepared for launch.</p>
             <button class="pill" onclick="order(${i})">
               ENQUIRE ON WHATSAPP
-            </button>
+            </button>`}
           </div>
         </article>
       `;
@@ -282,6 +302,7 @@ categoryTiles.addEventListener('click', event => {
 });
 
 renderProducts();
+const bnDetail=document.createElement('section');bnDetail.id='bn-product-detail';bnDetail.hidden=true;document.getElementById('shop').after(bnDetail);
 syncDriveCatalogue();
 loadAdminCatalogue();
 setInterval(syncDriveCatalogue, 5 * 60 * 1000);
