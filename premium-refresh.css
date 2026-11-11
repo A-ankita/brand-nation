@@ -1,0 +1,39 @@
+/* Brand Nation premium menswear refresh — visual-only, no checkout changes */
+:root{--ink:#252720;--gold:#8b7654;--cream:#f5f2eb;--bn-sand:#ebe6dc}
+html{scroll-behavior:smooth}
+body{background:#fffdf9;color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+.topline{background:#262921;letter-spacing:.16em;padding:11px 14px}
+header{background:#fffdf9;border-bottom:1px solid #e9e3d9;padding:15px 6%;box-shadow:0 5px 22px #24282008}
+.logo,.brandmark span{font-family:Georgia,serif;font-weight:normal;letter-spacing:.12em}
+nav a{font-size:12px;letter-spacing:.11em;text-transform:uppercase}
+nav a:hover{color:#85704e}
+.bn-cart-trigger{border:1px solid #b8a98e;border-radius:0;letter-spacing:.07em}
+.hero{min-height:610px;background:linear-gradient(115deg,#262b27 0%,#43473d 62%,#9a927f 100%);padding:85px 8%;gap:6vw}
+.hero:after{content:'BN';right:3%;bottom:-95px;font-size:310px}
+.hero h1{font-family:Georgia,serif;font-size:clamp(48px,6vw,86px);font-weight:normal;letter-spacing:-.035em;line-height:1.08}
+.hero p{font-size:17px;max-width:490px;line-height:1.8;color:#f0eee9}
+.hero .eyebrow{color:#e7d7b9;font-size:11px;letter-spacing:.24em}
+.hero .pill,.pill{background:#d8c4a3;color:#262720;border-radius:0;letter-spacing:.13em;font-weight:600}
+.hero .pill:hover,.pill:hover{background:#e7d8bf}
+.hero-brand{max-width:300px}
+.hero-brand img{border:1px solid #d8c4a3;border-radius:0;box-shadow:0 20px 65px #0003}
+section{padding:82px 7%}
+.sectionhead{margin-bottom:42px}
+.sectionhead .eyebrow{color:#8b7654}
+h2{font-size:clamp(30px,3.2vw,46px);letter-spacing:-.025em}
+.categories{gap:14px}
+.cat{background:#f1ede5;padding:48px 14px;transition:background .2s,transform .2s}
+.cat:hover{background:#e8dfd0;transform:translateY(-2px)}
+.cat small{color:#7b6a52}
+.grid{gap:22px}
+.product{border:1px solid #eee9df;box-shadow:0 7px 25px #2221}
+.photo{background:#f5f2eb}
+.product .info{padding:22px}
+.product h3{font-size:20px}
+.price{color:#4a493f}
+.banner{background:#292c27}
+.visit{background:#f1ede5}
+.visitbox{border-color:#d7cec0}
+footer{background:#242822}
+a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #b79b6e;outline-offset:3px}
+@media(max-width:750px){header{gap:12px}.hero{min-height:500px;padding:56px 6%;gap:28px}.hero h1{font-size:clamp(42px,10vw,58px)}.hero-brand{max-width:200px}.categories{grid-template-columns:repeat(2,minmax(0,1fr))}.cat{padding:30px 8px;font-size:19px}section{padding:55px 5%}.grid{grid-template-columns:1fr}.photo{height:340px}}
