@@ -131,7 +131,9 @@ function syncDriveCatalogue(){
   function finish(ok){if(finished)return;finished=true;clearTimeout(timeout);driveSyncLoading=false;script.remove();if(!ok)console.warn('Brand Nation: Google Drive sync unavailable. Existing products remain visible.');}
   window[cb]=function(payload){
     if(!payload || payload.error || !Array.isArray(payload.items)){console.warn('Drive catalogue:',payload&&payload.error);finish(false);return;}
-    let incoming;\n    try { incoming=groupDrivePhotos(payload.items); }\n    catch(error) { console.error('Brand Nation: Drive product grouping failed',error); finish(false); return; }
+    let incoming;
+    try { incoming=groupDrivePhotos(payload.items); }
+    catch(error) { console.error('Brand Nation: Drive product grouping failed',error); finish(false); return; }
     for(let i=products.length-1;i>=0;i--)if(products[i].fromDrive)products.splice(i,1);
     products.unshift(...incoming);
     applyAdminCatalogue();
