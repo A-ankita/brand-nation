@@ -37,3 +37,26 @@ h2{font-size:clamp(30px,3.2vw,46px);letter-spacing:-.025em}
 footer{background:#242822}
 a:focus-visible,button:focus-visible,select:focus-visible{outline:3px solid #b79b6e;outline-offset:3px}
 @media(max-width:750px){header{gap:12px}.hero{min-height:500px;padding:56px 6%;gap:28px}.hero h1{font-size:clamp(42px,10vw,58px)}.hero-brand{max-width:200px}.categories{grid-template-columns:repeat(2,minmax(0,1fr))}.cat{padding:30px 8px;font-size:19px}section{padding:55px 5%}.grid{grid-template-columns:1fr}.photo{height:340px}}
+
+/* Grouped Drive products: clean catalogue cards and dedicated gallery */
+.bn-card-photo{display:block;width:100%;height:100%;border:0;background:transparent;padding:0;cursor:pointer}
+.bn-card-photo img{width:100%;height:100%;object-fit:cover}
+.bn-view-details{background:none;border:0;border-bottom:1px solid #9b8059;color:#4a3c2c;padding:4px 0;margin:0 0 12px;align-self:flex-start;font-size:12px;letter-spacing:.08em;cursor:pointer}
+#bn-product-detail[hidden],#shop[hidden]{display:none!important}
+#bn-product-detail{background:#faf8f4;scroll-margin-top:90px}
+.bn-detail-inner{max-width:1200px;margin:auto}
+.bn-detail-back{background:none;border:0;cursor:pointer;letter-spacing:.12em;font-size:12px;margin-bottom:28px}
+.bn-detail-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:clamp(24px,5vw,70px);align-items:start}
+.bn-detail-main{width:100%;aspect-ratio:4/4.5;object-fit:contain;background:#eeeae4;display:block}
+.bn-detail-thumbnails{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;max-height:190px;overflow-y:auto}
+.bn-detail-thumbnails button{width:72px;height:80px;padding:0;border:1px solid #d7d1c8;background:#fff;cursor:pointer}
+.bn-detail-thumbnails button.active{border:2px solid #776041}
+.bn-detail-thumbnails img{width:100%;height:100%;object-fit:cover}
+.bn-detail-copy h1{font:normal clamp(28px,3vw,46px)/1.2 Georgia,serif;margin:16px 0}
+.bn-detail-copy p{line-height:1.7;color:#67625d}
+.bn-detail-copy label{display:block;margin-top:22px;font-size:13px}
+.bn-detail-copy .pill{width:100%;margin-top:14px}
+.bn-detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.bn-detail-actions button{min-height:46px;border:1px solid #181818;background:#fff;cursor:pointer}
+.bn-detail-actions button+button{background:#181818;color:#fff}
+@media(max-width:750px){.bn-detail-grid{grid-template-columns:1fr}.bn-detail-main{aspect-ratio:1/1}.bn-detail-thumbnails{flex-wrap:nowrap;overflow-x:auto;max-height:none}}
