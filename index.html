@@ -175,6 +175,9 @@ function renderProducts() {
   const selected = products
     .map((p, i) => ({ p, i }))
     .filter(({p})=>p.availability!=='hidden')
+    // Jackets is sourced exclusively from the Google Drive Jackets folder.
+    // Keep manually curated products intact for other collections and checkout.
+    .filter(({p})=>selectedCategory!=='Jackets'||(p.fromDrive===true && normalizedCategory(p.type)==='Jackets'))
     .filter(({ p }) =>
       selectedCategory === 'All Products' ||
       normalizedCategory(p.type) === normalizedCategory(selectedCategory)
