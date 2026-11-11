@@ -148,6 +148,11 @@ function syncDriveCatalogue(){
 }
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const categoryNames=['All Products','Knitwear','Polo T-Shirts','Shirts','Joggers','Jeans','Winterwear','Sweatshirts','Hoodies','Jackets','Tracksuits'];
+function normalizedCategory(value){
+ const name=String(value||'').trim().toLowerCase().replace(/\s+/g,' ');
+ const aliases={'knitwear':'Knitwear','mens knitwear':'Knitwear',"men's knitwear":'Knitwear','sweaters':'Knitwear','sweater':'Knitwear','knits':'Knitwear','t-shirts & polos':'Polo T-Shirts','polo t-shirts':'Polo T-Shirts','sweatshirts & hoodies':'Sweatshirts'};
+ return aliases[name]||String(value||'New Arrivals').trim();
+}
 const categoryTiles=document.getElementById('categoryTiles');
 function drawCategoryTiles(){categoryTiles.innerHTML=categoryNames.map((name,i)=>`<a class="cat${i===0?' active':''}" href="#shop" data-category="${escapeHtml(name)}" aria-current="${i===0?'true':'false'}">${escapeHtml(name)}<small>${i===0?'VIEW ALL':'EXPLORE'}</small></a>`).join('');}
 drawCategoryTiles();
@@ -168,7 +173,7 @@ function renderProducts() {
     .filter(({p})=>p.availability!=='hidden')
     .filter(({ p }) =>
       selectedCategory === 'All Products' ||
-      p.type === selectedCategory
+      normalizedCategory(p.type) === normalizedCategory(selectedCategory)
     );
 
   document.getElementById('collectionTitle').textContent =
@@ -261,7 +266,7 @@ function renderProducts() {
           </div>
         </article>
       `;
-    }).join('');
+    }).join('') || '<p class="muted" role="status" style="grid-column:1/-1;text-align:center;padding:32px 12px">No products are currently available in this category. Please check again shortly or enquire on WhatsApp.</p>';
 }
 
 categoryTiles.addEventListener('click', event => {
