@@ -1,6 +1,9 @@
 /** Brand Nation Drive catalogue. Publish this version as an Apps Script Web App.
  * Images must be shared for public viewing to display on the storefront.
  * Product prices, names and availability remain editable in catalogue-admin.json.
+ * To group photos, put all photos of ONE article/design in its own subfolder
+ * under a category folder. Different designs need separate subfolders.
+ * Publish a new Apps Script Web App version after this change.
  */
 const FOLDER_ID = '1Z2D2lmaY3CxQSg0Yb7CzDpzvUXSeCm_D';
 const MAX_IMAGES = 500;
@@ -19,7 +22,7 @@ function doGet(e) {
     const seen = {};
     const categoryCounts = {};
     const categoryFolders = [];
-    function scan(folder, category, depth) {
+    function scan(folder, category, depth, productGroup) {
       if (depth > MAX_DEPTH || items.length >= MAX_IMAGES) return;
       if (depth === 1) {
         categoryFolders.push(category);
@@ -37,6 +40,7 @@ function doGet(e) {
           id:file.getId(),
           name:name || 'New Arrival',
           category:category || 'New Arrivals',
+          productGroup:productGroup || '',
           updated:file.getLastUpdated().getTime()
         });
       }
@@ -44,10 +48,10 @@ function doGet(e) {
       const folders = folder.getFolders();
       while (folders.hasNext() && items.length < MAX_IMAGES) {
         const child = folders.next();
-        scan(child, category || child.getName(), depth + 1);
+        scan(child, category || child.getName(), depth + 1, category ? (productGroup || child.getId()) : '');
       }
     }
-    scan(root, '', 0);
+    scan(root, '', 0, '');
     items.sort((a,b) => b.updated - a.updated);
     result = {items:items, categoryCounts:categoryCounts, categoryFolders:categoryFolders, total:items.length, limitReached:items.length >= MAX_IMAGES};
   } catch(err) {
