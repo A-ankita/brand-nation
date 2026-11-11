@@ -106,6 +106,20 @@ function driveProductTitle(item){
  if(!/^(men'?s|women'?s|unisex)/i.test(title) && !['Watches','Bags'].includes(category))title="Men's "+title;
  return title.slice(0,100);
 }
+// Group photos only when the Drive sync identifies the same article subfolder.
+function groupDrivePhotos(items){
+ const groups=new Map();
+ for(const item of items){
+  if(!item||!/^[a-zA-Z0-9_-]{10,}$/.test(item.id))continue;
+  const category=String(item.category||'New Arrivals').trim();
+  const explicit=String(item.productGroup||'').trim();
+  const key=explicit ? category+'::'+explicit : 'single::'+item.id;
+  const url='https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200';
+  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:explicit?String(item.productName||'').trim()||'Product Gallery':driveProductTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
+  else groups.get(key).gallery.push(url);
+ }
+ return [...groups.values()];
+}
 let driveSyncLoading=false;
 function syncDriveCatalogue(){
   if(!DRIVE_SYNC_URL || driveSyncLoading) return;
@@ -117,11 +131,7 @@ function syncDriveCatalogue(){
   function finish(ok){if(finished)return;finished=true;clearTimeout(timeout);driveSyncLoading=false;script.remove();if(!ok)console.warn('Brand Nation: Google Drive sync unavailable. Existing products remain visible.');}
   window[cb]=function(payload){
     if(!payload || payload.error || !Array.isArray(payload.items)){console.warn('Drive catalogue:',payload&&payload.error);finish(false);return;}
-    const incoming=payload.items.filter(item=>item&&/^[a-zA-Z0-9_-]{10,}$/.test(item.id)).map(item=>({
-      id:'drive-'+item.id,name:driveProductTitle(item),
-      type:String(item.category || 'New Arrivals').trim(),image:'https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200',
-      gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true
-    }));
+    const incoming=groupDrivePhotos(payload.items);
     for(let i=products.length-1;i>=0;i--)if(products[i].fromDrive)products.splice(i,1);
     products.unshift(...incoming);
     applyAdminCatalogue();
