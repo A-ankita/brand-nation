@@ -115,7 +115,7 @@ function groupDrivePhotos(items){
   const explicit=String(item.productGroup||'').trim();
   const key=explicit ? category+'::'+explicit : 'single::'+item.id;
   const url='https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200';
-  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:explicit?String(item.productName||'').trim()||'Product Gallery':driveProductTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
+  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:driveDisplayTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
   else groups.get(key).gallery.push(url);
  }
  return [...groups.values()];
