@@ -115,7 +115,7 @@ function groupDrivePhotos(items){
   const explicit=String(item.productGroup||'').trim();
   const key=explicit ? category+'::'+explicit : 'single::'+item.id;
   const url='https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200';
-  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:driveDisplayTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
+  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:driveProductTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
   else groups.get(key).gallery.push(url);
  }
  return [...groups.values()];
@@ -131,7 +131,7 @@ function syncDriveCatalogue(){
   function finish(ok){if(finished)return;finished=true;clearTimeout(timeout);driveSyncLoading=false;script.remove();if(!ok)console.warn('Brand Nation: Google Drive sync unavailable. Existing products remain visible.');}
   window[cb]=function(payload){
     if(!payload || payload.error || !Array.isArray(payload.items)){console.warn('Drive catalogue:',payload&&payload.error);finish(false);return;}
-    const incoming=groupDrivePhotos(payload.items);
+    let incoming;\n    try { incoming=groupDrivePhotos(payload.items); }\n    catch(error) { console.error('Brand Nation: Drive product grouping failed',error); finish(false); return; }
     for(let i=products.length-1;i>=0;i--)if(products[i].fromDrive)products.splice(i,1);
     products.unshift(...incoming);
     applyAdminCatalogue();
