@@ -106,6 +106,19 @@ function driveProductTitle(item){
  if(!/^(men'?s|women'?s|unisex)/i.test(title) && !['Watches','Bags'].includes(category))title="Men's "+title;
  return title.slice(0,100);
 }
+// Curated display names for recognizable Drive product families. These affect titles only,
+// never grouping, image order, product IDs, prices or checkout.
+function curatedDriveTitle(item){
+ const raw=String(item.name||'').toLowerCase();
+ const category=String(item.category||'').toLowerCase();
+ const group=String(item.productGroup||'');
+ if(category!=='knitwear')return '';
+ // Specific nested folder: Solid Button-Neck Henley Knitwear.
+ if(group==='1t11S789W8gxGIsqo0OOR96v1UgYAx46Q')return "Men's Classic Button-Neck Knit Polo Sweater";
+ if(/(?:teddy|bear)[-_ ]?(?:graphic|knit|sweater)|(?:graphic[-_ ]?)?bear[-_ ]knitwear/.test(raw))return "Men's Teddy Bear Graphic Crew-Neck Knit Sweater";
+ if(/(?:ribbed[-_ ]?)?henley[-_ ]knit/.test(raw))return "Men's Premium Ribbed Henley Knit Sweater";
+ return '';
+}
 // Group only explicitly related photos. A product's Drive subfolder is its group;
 // unrelated images in the same category remain separate products.
 function groupDrivePhotos(items){
@@ -116,7 +129,7 @@ function groupDrivePhotos(items){
   const explicit=String(item.productGroup||'').trim();
   const key=explicit ? category+'::'+explicit : 'single::'+item.id;
   const url='https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200';
-  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:driveProductTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
+  if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:curatedDriveTitle(item)||driveProductTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
   else groups.get(key).gallery.push(url);
  }
  const grouped=[...groups.values()];
@@ -125,7 +138,7 @@ function groupDrivePhotos(items){
    const first=items.find(item=>('drive-'+item.id)===p.id);
    const raw=String(first?.name||'').replace(/^BN-GH-[a-f0-9]{16}-/i,'').replace(/\.(webp|jpg|jpeg|png)$/i,'').replace(/[-_]+/g,' ').replace(/\s+\d+$/,'').trim();
    const candidate=raw.replace(/\b(?:nov\d+|latest|new|range|gallery)\b/gi,' ').replace(/\s+/g,' ').trim();
-   if(candidate && /henley|knit|polo|shirt|jacket|hoodie|sweater|tracksuit|jogger/i.test(candidate))p.name= 'Men\'s '+candidate.replace(/\b\w/g,c=>c.toUpperCase());
+   if(!curatedDriveTitle(first) && candidate && /henley|knit|polo|shirt|jacket|hoodie|sweater|tracksuit|jogger/i.test(candidate))p.name= 'Men\'s '+candidate.replace(/\b\w/g,c=>c.toUpperCase());
   }
  }
  return grouped;
