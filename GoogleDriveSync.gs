@@ -33,7 +33,17 @@ function doGet(e) {
         const bucket = category || 'New Arrivals';
         categoryCounts[bucket] = (categoryCounts[bucket] || 0) + 1;
         const name = file.getName().replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim();
+        // Group alternate views only when filenames share a specific article stem.
+        const stem = name
+          .replace(/^BN GH [a-f0-9]{16}\s+/i, '')
+          .replace(/\b(?:front|back|rear|side|detail|closeup|close up|angle|view|photo|image|img)\b/gi, ' ')
+          .replace(/\b(?:0?[1-9]|[1-9][0-9])\b$/g, ' ')
+          .replace(/\s+/g, ' ').trim().toLowerCase();
+        const generic = /^(?:men s? )?(?:co ord sets?|jackets?|shirts?|knitwear|bottomwear|new arrivals?)$/i.test(stem);
+        const productGroup = !generic && stem.length >= 12 && stem.split(' ').length >= 3
+          ? 'name:' + bucket.toLowerCase() + ':' + stem : '';
         items.push({
+          productGroup:productGroup,
           id:file.getId(),
           name:name || 'New Arrival',
           category:category || 'New Arrivals',
