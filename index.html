@@ -361,7 +361,7 @@ function renderFreshArrivals(){
    const title=escapeHtml(p.name||'New Arrival');
    const img=p.image?'<img src="'+escapeHtml(p.image)+'" alt="'+title+'" loading="lazy">':'';
    const label=/shacket/i.test([p.name,p.type].join(' '))?'CLASSIC SHACKET':/porsche/i.test([p.name,p.type].join(' '))?'PORSCHE SERIES':'NEW ARRIVAL';
-   return '<article class="fresh-card"><a href="#shop" onclick="selectedCategory=\\'All Products\\';renderProducts();setTimeout(()=>document.getElementById(\\'shop\\').scrollIntoView({behavior:\\'smooth\\'}),0)">'+img+'<span class="fresh-card-body"><small>'+label+'</small><strong>'+title+'</strong><span>New at Brand Nation · Confirm availability</span><b>EXPLORE COLLECTION →</b></span></a></article>';
+   return '<article class="fresh-card"><a href="#shop" onclick="selectedCategory=\'All Products\';renderProducts();setTimeout(()=>document.getElementById(\'shop\').scrollIntoView({behavior:\'smooth\'}),0)">'+img+'<span class="fresh-card-body"><small>'+label+'</small><strong>'+title+'</strong><span>New at Brand Nation · Confirm availability</span><b>EXPLORE COLLECTION →</b></span></a></article>';
  }).join('');
 }
 document.addEventListener('DOMContentLoaded',()=>{renderFreshArrivals();});
