@@ -352,7 +352,7 @@ function renderFreshArrivals(){
  const available=products.filter(p=>p.fromDrive && p.availability!=='hidden');
  const priority=p=>/classic[\\s_-]*shacket|shacket/i.test([p.name,p.type,p.id].join(' '))?0:
                      /porsche/i.test([p.name,p.type,p.id].join(' '))?1:2;
- const arrivals=available.map((p,i)=>({p,i})).sort((a,b)=>priority(a.p)-priority(b.p)||a.i-b.i).slice(0,12).map(x=>x.p);
+ const arrivals=available.map((p,i)=>({p,i})).sort((a,b)=>priority(a.p)-priority(b.p)||a.i-b.i).slice(0,4).map(x=>x.p);
  if(!arrivals.length){
    grid.innerHTML='<p class="muted" role="status">Fresh Arrivals are syncing from our catalogue. Please explore all products below or contact us for the latest collection.</p>';
    return;
