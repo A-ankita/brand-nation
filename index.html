@@ -125,7 +125,10 @@ function driveProductTitle(item){
 // Group photos only when the Drive sync identifies the same article subfolder.
 function groupDrivePhotos(items){
  const groups=new Map();
+ const seenDriveIds=new Set();
  for(const item of items){
+  if(item && seenDriveIds.has(item.id))continue;
+  if(item)seenDriveIds.add(item.id);
   if(!item||!/^[a-zA-Z0-9_-]{10,}$/.test(item.id))continue;
   const category=String(item.category||'New Arrivals').trim();
   const explicit=String(item.productGroup||'').trim();
@@ -242,14 +245,15 @@ function renderProducts() {
              alt="${escapeHtml(p.name+' | Brand Nation '+p.type)}">`
         : (p.illustration || '');
 
-      const galleryHtml = p.gallery && p.gallery.length
+      const galleryImages = [...new Set([p.image, ...(p.gallery||[])].filter(Boolean))];
+      const galleryHtml = galleryImages.length > 1
         ? `<div class="bn-gallery" aria-label="More photos of ${escapeHtml(p.name)}">
             <button type="button" class="bn-gallery-prev" aria-label="Scroll photos left">‹</button>
             <div class="thumbs" tabindex="0" aria-label="Product photo thumbnails, scroll horizontally">
-              ${[p.image, ...p.gallery].filter(Boolean)
+              ${galleryImages.slice(1)
                 .map((img, j) => `
-                  <button type="button" class="bn-thumb${j===0?' is-active':''}" data-image="${escapeHtml(img)}"
-                    aria-label="Show photo ${j+1} of ${escapeHtml(p.name)}" aria-pressed="${j===0?'true':'false'}">
+                  <button type="button" class="bn-thumb" data-image="${escapeHtml(img)}"
+                    aria-label="Show alternate photo ${j+1} of ${escapeHtml(p.name)}" aria-pressed="false">
                     <img src="${escapeHtml(img)}" alt="" loading="lazy">
                   </button>`).join('')}
             </div>
@@ -395,7 +399,7 @@ document.addEventListener('DOMContentLoaded',()=>{renderFreshArrivals();});
  const modal=document.getElementById('bn-photo-modal'),large=document.getElementById('bn-photo-large');
  let images=[],current=0,previousFocus=null;
  function show(){large.src=images[current];modal.querySelector('.bn-photo-count').textContent=(current+1)+' / '+images.length;}
- function open(card){images=[...card.querySelectorAll('.bn-thumb')].map(b=>b.dataset.image);if(!images.length){const img=card.querySelector('.photo img');if(img)images=[img.src];}if(!images.length)return;current=Math.max(0,images.indexOf(card.querySelector('.photo img')?.getAttribute('src')));previousFocus=document.activeElement;modal.hidden=false;document.body.style.overflow='hidden';show();modal.querySelector('.bn-photo-close').focus();}
+ function open(card){images=[card.querySelector('.photo img')?.src,...[...card.querySelectorAll('.bn-thumb')].map(b=>b.dataset.image)].filter(Boolean);images=[...new Set(images)];if(!images.length)return;current=Math.max(0,images.indexOf(card.querySelector('.photo img')?.getAttribute('src')));previousFocus=document.activeElement;modal.hidden=false;document.body.style.overflow='hidden';show();modal.querySelector('.bn-photo-close').focus();}
  function close(){modal.hidden=true;large.removeAttribute('src');document.body.style.overflow='';previousFocus?.focus();}
  function move(n){if(images.length){current=(current+n+images.length)%images.length;show();}}
  document.getElementById('products').addEventListener('click',function(e){
