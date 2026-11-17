@@ -1,0 +1,12 @@
+{
+  "appId": "in.brandnation.shop",
+  "appName": "Brand Nation",
+  "webDir": "www",
+  "server": {
+    "url": "https://brand-nation.in",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}
