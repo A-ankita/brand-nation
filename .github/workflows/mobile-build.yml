@@ -22,6 +22,7 @@ jobs:
       - uses: android-actions/setup-android@v3
       - run: npm install --no-audit --no-fund
       - run: npm run check
+      - run: npm run build
       - run: npx cap add android
       - run: npx cap sync android
       - run: chmod +x android/gradlew
@@ -43,11 +44,12 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npm run check
+      - run: npm run build
       - run: npx cap add ios
       - run: npx cap sync ios
-      - run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+      - run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
       - uses: actions/upload-artifact@v4
         with:
           name: brand-nation-ios-simulator-app
-          path: mobile/ios/App/build/
+          path: mobile/build/Build/Products/Debug-iphonesimulator/App.app
           if-no-files-found: ignore
