@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
       # GitHub ubuntu-latest already provides Android SDK command-line tools.
       # setup-android@v3 currently fails attempting to install obsolete SDK 'tools'.
       - run: echo "ANDROID_HOME=$ANDROID_HOME" && test -d "$ANDROID_HOME"
