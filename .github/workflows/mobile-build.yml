@@ -26,11 +26,17 @@ jobs:
         run: |
           curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/A-ankita/brand-nation/main/cloudinary-map.js" -o www/cloudinary-map.js
           grep -q 'BRAND_NATION_CLOUDINARY_MAP' www/cloudinary-map.js
+      - name: Download official Brand Nation logo
+        run: |
+          curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/A-ankita/brand-nation/main/brand-nation-logo.webp" -o www/brand-nation-logo.webp
+          test -s www/brand-nation-logo.webp
+      - run: python3 -m pip install Pillow
       - run: npm install --no-audit --no-fund
       - run: npm run check
       - run: npm run build
       - run: npx cap add android
       - run: npx cap sync android
+      - run: python3 scripts/generate_icons.py
       - name: Verify newest mobile UI is bundled in Android
         run: |
           grep -q 'id="arrivals"' android/app/src/main/assets/public/index.html
@@ -58,6 +64,7 @@ jobs:
       - run: npm run build
       - run: npx cap add ios
       - run: npx cap sync ios
+      - run: python3 scripts/generate_icons.py
       - name: Verify newest mobile UI is bundled in iOS
         run: |
           grep -q 'id="arrivals"' ios/App/App/public/index.html
