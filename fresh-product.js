@@ -13,7 +13,7 @@ const $=id=>document.getElementById(id);
 const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const url=window.BRAND_NATION_DRIVE_SYNC_URL;
 const requestedId=new URLSearchParams(location.search).get('driveId');
-if(requestedId && /^[a-zA-Z0-9_-]{10,}$/.test(requestedId)){$('main-photo').src='https://drive.google.com/thumbnail?id='+encodeURIComponent(requestedId)+'&sz=w1200';}
+if(requestedId && /^[a-zA-Z0-9_-]{10,}$/.test(requestedId)){$('main-photo').src='https://drive.google.com/thumbnail?id='+encodeURIComponent(requestedId)+'&sz=w900';}
 $('name').textContent=target;document.title=target+' | Brand Nation';
 $('message').textContent='Checking the live Brand Nation catalogue…';
 if(!url){$('message').textContent='Catalogue connection unavailable. Please enquire on WhatsApp.';return;}
@@ -32,10 +32,11 @@ window[cb]=function(data){
  const group=matches[0].productGroup ? entries.filter(x=>x.productGroup===matches[0].productGroup && x.category===matches[0].category) : matches;
  const items=group.length?group:matches;
  const ids=[...new Set(items.map(x=>x.id))];
- const photos=ids.map(id=>'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w1200');
+ const photos=ids.map(id=>'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w900');
+ const thumbPhotos=ids.map(id=>'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w240');
  const primaryIndex=slug==='denim-jacket' && photos.length>2 ? 2 : 0;
  $('main-photo').src=photos[primaryIndex];$('main-photo').alt=target+' product photograph';
- $('gallery').innerHTML=photos.map((src,i)=>'<button type="button" class="thumb" aria-label="View image '+(i+1)+'"><img src="'+escape(src)+'" alt="'+escape(target)+' view '+(i+1)+'" loading="lazy"></button>').join('');
+ $('gallery').innerHTML=thumbPhotos.map((src,i)=>'<button type="button" class="thumb" aria-label="View image '+(i+1)+'"><img src="'+escape(src)+'" alt="'+escape(target)+' view '+(i+1)+'" loading="lazy"></button>').join('');
  [...$('gallery').children].forEach((b,i)=>b.addEventListener('click',()=>{$('main-photo').src=photos[i]}));
  $('category').textContent=displayCategories[slug]||items[0].category||'Fresh Arrivals';
  $('message').textContent='Select your preferred size and contact us to confirm price and stock.';
