@@ -1,0 +1,43 @@
+name: Cloudinary product image migration
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: 'Maximum new images to migrate this run'
+        required: true
+        default: '25'
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+      - name: Upload product images
+        env:
+          CLOUDINARY_CLOUD_NAME: ljmi8wba
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          BRAND_NATION_DRIVE_FEED: https://script.google.com/macros/s/AKfycbznN4Z-9Uy34jaw1v6etLQqD13brw9dcPnVnGx6RlrT8wyIZZGrX2klScCrjyPfOcad/exec
+          MIGRATION_LIMIT: ${{ inputs.limit }}
+        run: python scripts/migrate_cloudinary.py
+      - name: Save successfully migrated image mapping
+        if: always()
+        run: |
+          if git diff --quiet -- cloudinary-map.js; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cloudinary-map.js
+          git commit -m "Update Cloudinary image mapping"
+          git push
+      - name: Upload migration report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cloudinary-migration-report
+          path: cloudinary-migration-report.json
+          if-no-files-found: ignore
