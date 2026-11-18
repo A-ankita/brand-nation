@@ -113,11 +113,11 @@ function renderCatalogue(){
   const strong=document.createElement('strong');strong.textContent=p.name;
   const link=document.createElement('em');link.textContent='Shop collection →';
   copy.append(small,strong,link);b.append(img,copy);
-  b.addEventListener('click',()=>browse(site+'#shop'));
+  b.addEventListener('click',()=>openGallery(p));
   catalogueGrid.appendChild(b);
-  setThumbnail(img,p.id);
+  setThumbnail(img,p.ids[0]);
  });
- catalogueStatus.textContent=filtered.length+' collections available. Select an item to browse the full website catalogue.';
+ catalogueStatus.textContent=filtered.length+' products available. Tap a product to view its photo gallery.';
 }
 function loadCatalogue(){
  const cb='brandNationAppFeed';
@@ -134,7 +134,8 @@ function loadCatalogue(){
    const category=classify(name,item.category);
    const group=clean(item.productGroup);
    const key=(group && !looksLikeFilename(group))?category+'::'+group.toLowerCase():'single::'+item.id;
-   if(!groups.has(key))groups.set(key,{name,category,id:item.id});
+   if(!groups.has(key))groups.set(key,{name,category,id:item.id,ids:[item.id]});
+   else if(!groups.get(key).ids.includes(item.id))groups.get(key).ids.push(item.id);
   });
   catalogue=[...groups.values()].sort((a,b)=>categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category)||a.name.localeCompare(b.name));
   renderCatalogue();
@@ -152,3 +153,26 @@ function loadCatalogue(){
 }
 document.getElementById('browse').addEventListener('click',async()=>{await buzz();document.getElementById('catalogue').scrollIntoView({behavior:'smooth'});});
 loadCatalogue();
+
+const gallery=document.getElementById('product-gallery');
+const galleryImage=document.getElementById('gallery-image');
+let activeProduct=null,activePhoto=0;
+function showGalleryPhoto(){
+ if(!activeProduct)return;
+ galleryImage.src=window.brandNationImage?window.brandNationImage(activeProduct.ids[activePhoto],900):photo(activeProduct.ids[activePhoto]);
+ galleryImage.alt=activeProduct.name+' photo '+(activePhoto+1);
+ document.getElementById('gallery-count').textContent=(activePhoto+1)+' of '+activeProduct.ids.length;
+ document.getElementById('gallery-prev').disabled=activeProduct.ids.length<2;
+ document.getElementById('gallery-next').disabled=activeProduct.ids.length<2;
+}
+function openGallery(product){
+ activeProduct=product;activePhoto=0;
+ document.getElementById('gallery-title').textContent=product.name;
+ document.getElementById('gallery-category').textContent=product.category;
+ showGalleryPhoto();gallery.showModal();
+}
+document.getElementById('gallery-close').addEventListener('click',()=>gallery.close());
+document.getElementById('gallery-prev').addEventListener('click',()=>{if(activeProduct){activePhoto=(activePhoto+activeProduct.ids.length-1)%activeProduct.ids.length;showGalleryPhoto();}});
+document.getElementById('gallery-next').addEventListener('click',()=>{if(activeProduct){activePhoto=(activePhoto+1)%activeProduct.ids.length;showGalleryPhoto();}});
+document.getElementById('gallery-shop').addEventListener('click',()=>browse(site+'#shop'));
+gallery.addEventListener('click',event=>{if(event.target===gallery)gallery.close();});
