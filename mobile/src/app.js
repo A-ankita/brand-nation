@@ -41,7 +41,7 @@ document.querySelectorAll('[data-url]').forEach(el=>el.addEventListener('click',
 connectivity();
 Network.addListener('networkStatusChange',s=>{offline.hidden=s.connected;}).catch(()=>{});
 if (Capacitor.isNativePlatform()) {
-  App.addListener('backButton',()=>{window.scrollTo({top:0,behavior:'smooth'});}).catch(()=>{});
+  App.addListener('backButton',()=>{const dialog=document.getElementById('product-gallery');if(dialog?.open){dialog.close();return;}window.scrollTo({top:0,behavior:'smooth'});}).catch(()=>{});
 }
 
 // Live Drive catalogue loaded through the same JSONP endpoint as the website.
