@@ -27,6 +27,11 @@ jobs:
       - run: npm run build
       - run: npx cap add android
       - run: npx cap sync android
+      - name: Verify newest mobile UI is bundled in Android
+        run: |
+          grep -q 'id="arrivals"' android/app/src/main/assets/public/index.html
+          grep -q 'id="featured-grid"' android/app/src/main/assets/public/index.html
+          grep -q 'Fresh arrivals' android/app/src/main/assets/public/index.html
       - run: chmod +x android/gradlew
       - run: ./gradlew assembleDebug
         working-directory: mobile/android
@@ -49,6 +54,10 @@ jobs:
       - run: npm run build
       - run: npx cap add ios
       - run: npx cap sync ios
+      - name: Verify newest mobile UI is bundled in iOS
+        run: |
+          grep -q 'id="arrivals"' ios/App/App/public/index.html
+          grep -q 'id="featured-grid"' ios/App/App/public/index.html
       - run: xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build CODE_SIGNING_ALLOWED=NO build
       - uses: actions/upload-artifact@v4
         with:
