@@ -168,7 +168,7 @@ function groupDrivePhotos(items){
   const category=String(item.category||'New Arrivals').trim();
   const explicit=String(item.productGroup||'').trim();
   const key=explicit ? category+'::'+explicit : 'single::'+item.id;
-  const url='https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200';
+  const url='https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w480';
   if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:explicit
   ? String(item.name || 'New Arrival').trim()
   : driveProductTitle(item),type:correctedCategory(explicit||item.name,category),image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
@@ -275,7 +275,7 @@ function renderProducts() {
       `;
 
       const photoHtml = p.image
-        ? `<img src="${p.image}" loading="lazy"
+        ? `<img src="${p.image}" loading="lazy" decoding="async"
              alt="${escapeHtml(p.name+' | Brand Nation '+p.type)}">`
         : (p.illustration || '');
 
@@ -288,7 +288,7 @@ function renderProducts() {
                 .map((img, j) => `
                   <button type="button" class="bn-thumb" data-image="${escapeHtml(img)}"
                     aria-label="Show alternate photo ${j+1} of ${escapeHtml(p.name)}" aria-pressed="false">
-                    <img src="${escapeHtml(img)}" alt="" loading="lazy">
+                    <img src="${escapeHtml(img)}" alt="" loading="lazy" decoding="async">
                   </button>`).join('')}
             </div>
             <button type="button" class="bn-gallery-next" aria-label="Scroll photos right">›</button>
@@ -415,7 +415,7 @@ function renderFreshArrivals(){
  }
  grid.innerHTML=arrivals.map(p=>{
    const title=escapeHtml(p.name||'New Arrival');
-   const img=p.image?'<img src="'+escapeHtml(p.image)+'" alt="'+title+'" loading="lazy">':'';
+   const img=p.image?'<img src="'+escapeHtml(p.image)+'" alt="'+title+'" loading="lazy" decoding="async">':'';
    const label=correctedCategory(p.name,p.type).toUpperCase();
    const slug=String(p.name||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
    const detailSlugs=['armani-shacket','classic-shacket','puma-porsche-series','denim-jacket'];
