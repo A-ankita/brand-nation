@@ -76,7 +76,13 @@ const catalogueName=(item)=>{
  if(!hasArticle || looksLikeFilename(raw))return labels[category]||'New Arrival';
  return raw.split(' ').slice(0,8).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
 };
-const looksLikeFilename=s=>/^(?:img|dsc|pxl|mvimg|whatsapp|image)[\s_-]*\d+/i.test(s)||/^[a-f0-9_-]{16,}$/i.test(s)||/^\d{6,}/.test(s);
+const looksLikeFilename=s=>{
+ const v=clean(s);
+ return /^(?:img|dsc|pxl|mvimg|whatsapp|image)[\\s_-]*\\d+/i.test(v)
+ || /^[a-zA-Z0-9_-]{18,}$/.test(v)
+ || /^\\d{6,}/.test(v)
+ || /^(?:BN-GH-)?[a-f0-9]{16,}/i.test(v);
+};
 const photo=id=>window.brandNationImage?window.brandNationImage(id,320):'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w320';
 const thumbnailObserver=('IntersectionObserver' in window)?new IntersectionObserver(entries=>{
  entries.forEach(entry=>{if(!entry.isIntersecting)return;const img=entry.target;img.src=img.dataset.src;img.removeAttribute('data-src');thumbnailObserver.unobserve(img);});
@@ -126,7 +132,8 @@ function loadCatalogue(){
    if(!item||!(/^[a-zA-Z0-9_-]{10,}$/).test(String(item.id||'')))return;
    const name=catalogueName(item);
    const category=classify(name,item.category);
-   const key=category+'::'+name.toLowerCase();
+   const group=clean(item.productGroup);
+   const key=(group && !looksLikeFilename(group))?category+'::'+group.toLowerCase():'single::'+item.id;
    if(!groups.has(key))groups.set(key,{name,category,id:item.id});
   });
   catalogue=[...groups.values()].sort((a,b)=>categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category)||a.name.localeCompare(b.name));
