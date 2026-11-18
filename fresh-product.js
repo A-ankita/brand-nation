@@ -7,6 +7,7 @@ const catalog={
 };
 const slug=document.body.dataset.product;
 const target=catalog[slug];
+const displayCategories={'armani-shacket':'Shackets & Jackets','classic-shacket':'Shackets & Jackets','puma-porsche-series':'Sweatshirts','denim-jacket':'Denim Jackets'};
 if(!target)return;
 const $=id=>document.getElementById(id);
 const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -32,10 +33,11 @@ window[cb]=function(data){
  const items=group.length?group:matches;
  const ids=[...new Set(items.map(x=>x.id))];
  const photos=ids.map(id=>'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w1200');
- $('main-photo').src=photos[0];$('main-photo').alt=target+' product photograph';
+ const primaryIndex=slug==='denim-jacket' && photos.length>2 ? 2 : 0;
+ $('main-photo').src=photos[primaryIndex];$('main-photo').alt=target+' product photograph';
  $('gallery').innerHTML=photos.map((src,i)=>'<button type="button" class="thumb" aria-label="View image '+(i+1)+'"><img src="'+escape(src)+'" alt="'+escape(target)+' view '+(i+1)+'" loading="lazy"></button>').join('');
  [...$('gallery').children].forEach((b,i)=>b.addEventListener('click',()=>{$('main-photo').src=photos[i]}));
- $('category').textContent=items[0].category||'Fresh Arrivals';
+ $('category').textContent=displayCategories[slug]||items[0].category||'Fresh Arrivals';
  $('message').textContent='Select your preferred size and contact us to confirm price and stock.';
  finish();
 };
