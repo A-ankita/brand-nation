@@ -59,6 +59,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: python3 -m pip install Pillow
       - run: npm install --no-audit --no-fund
       - run: npm run check
       - run: npm run build
