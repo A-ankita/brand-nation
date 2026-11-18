@@ -140,6 +140,24 @@ function driveProductTitle(item){
  return title.slice(0,100);
 }
 // Group photos only when the Drive sync identifies the same article subfolder.
+// Classify products by the article itself before falling back to its Drive folder.
+function correctedCategory(name, sourceCategory){
+ const n=String(name||'').toLowerCase();
+ const c=String(sourceCategory||'New Arrivals').trim();
+ if(/shacket/.test(n))return 'Shackets';
+ if(/denim jacket|windbreaker|\\bjacket\\b/.test(n))return 'Jackets';
+ if(/tracksuit|trackset|track set|co-ord|coord set/.test(n))return 'Tracksuits';
+ if(/hoodie/.test(n))return 'Hoodies';
+ if(/sweatshirt|porsche series|911 turbo/.test(n))return 'Sweatshirts';
+ if(/jogger|trackpant|track pant/.test(n))return 'Joggers';
+ if(/\\bjeans?\\b/.test(n))return 'Jeans';
+ if(/\\bshirt\\b/.test(n))return 'Shirts';
+ if(/polo t-shirt|\\bt-shirt\\b|\\btshirt\\b/.test(n))return 'Polo T-Shirts';
+ const aliases={'shackets':'Shackets','shackets & jackets':'Shackets','denim jackets':'Jackets','jackets':'Jackets','sweatshirts & hoodies':'Sweatshirts','co-ord sets':'Tracksuits','bottomwear':'Joggers','t-shirts & polos':'Polo T-Shirts'};
+ return aliases[c.toLowerCase()]||c;
+}
+const categoryOrder=['Jackets','Shackets','Tracksuits','Sweatshirts','Hoodies','Knitwear','Winterwear','Shirts','Polo T-Shirts','Jeans','Joggers'];
+function categoryRank(p){const n=correctedCategory(p.name,p.type);const i=categoryOrder.indexOf(n);return i<0?categoryOrder.length:i;}
 function groupDrivePhotos(items){
  const groups=new Map();
  const seenDriveIds=new Set();
@@ -153,7 +171,7 @@ function groupDrivePhotos(items){
   const url='https://drive.google.com/thumbnail?id='+encodeURIComponent(item.id)+'&sz=w1200';
   if(!groups.has(key))groups.set(key,{id:'drive-'+item.id,name:explicit
   ? String(item.name || 'New Arrival').trim()
-  : driveProductTitle(item),type:category,image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
+  : driveProductTitle(item),type:correctedCategory(explicit||item.name,category),image:url,gallery:[],colors:'Please confirm available colours',sizes:['M','L','XL','XXL'],price:null,fromDrive:true});
   else groups.get(key).gallery.push(url);
  }
  return [...groups.values()];
@@ -187,14 +205,14 @@ function syncDriveCatalogue(){
   document.head.appendChild(script);
 }
 const escapeHtml=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const categoryNames=['All Products','Knitwear','Polo T-Shirts','Shirts','Joggers','Jeans','Winterwear','Sweatshirts','Hoodies','Jackets','Tracksuits'];
+const categoryNames=['All Products','Jackets','Shackets','Tracksuits','Sweatshirts','Hoodies','Knitwear','Winterwear','Shirts','Polo T-Shirts','Jeans','Joggers'];
 function normalizedCategory(value){
  const name=String(value||'').trim().toLowerCase().replace(/\s+/g,' ');
  const aliases={'knitwear':'Knitwear','mens knitwear':'Knitwear',"men's knitwear":'Knitwear','sweaters':'Knitwear','sweater':'Knitwear','knits':'Knitwear','t-shirts & polos':'Polo T-Shirts','polo t-shirts':'Polo T-Shirts','sweatshirts & hoodies':'Sweatshirts'};
  return aliases[name]||String(value||'New Arrivals').trim();
 }
 const categoryTiles=document.getElementById('categoryTiles');
-function drawCategoryTiles(){categoryTiles.innerHTML=categoryNames.map((name,i)=>`<a class="cat${i===0?' active':''}" href="#shop" data-category="${escapeHtml(name)}" aria-current="${i===0?'true':'false'}">${escapeHtml(name)}<small>${i===0?'VIEW ALL':'EXPLORE'}</small></a>`).join('');}
+function drawCategoryTiles(){categoryNames.sort((a,b)=>a==='All Products'?-1:b==='All Products'?1:categoryOrder.indexOf(a)===-1?1:categoryOrder.indexOf(b)===-1?-1:categoryOrder.indexOf(a)-categoryOrder.indexOf(b));categoryTiles.innerHTML=categoryNames.map((name,i)=>`<a class="cat${i===0?' active':''}" href="#shop" data-category="${escapeHtml(name)}" aria-current="${i===0?'true':'false'}">${escapeHtml(name)}<small>${i===0?'VIEW ALL':'EXPLORE'}</small></a>`).join('');}
 drawCategoryTiles();
 let selectedCategory='All Products';
 
@@ -211,13 +229,11 @@ function renderProducts() {
   const selected = products
     .map((p, i) => ({ p, i }))
     .filter(({p})=>p.availability!=='hidden')
-    // Jackets is sourced exclusively from the Google Drive Jackets folder.
-    // Keep manually curated products intact for other collections and checkout.
-    .filter(({p})=>selectedCategory!=='Jackets'||(p.fromDrive===true && normalizedCategory(p.type)==='Jackets'))
     .filter(({ p }) =>
       selectedCategory === 'All Products' ||
-      normalizedCategory(p.type) === normalizedCategory(selectedCategory)
-    );
+      normalizedCategory(correctedCategory(p.name,p.type)) === normalizedCategory(selectedCategory)
+    )
+    .sort((a,b)=>categoryRank(a.p)-categoryRank(b.p)||a.i-b.i);
 
   document.getElementById('collectionTitle').textContent =
     selectedCategory;
@@ -233,6 +249,7 @@ function renderProducts() {
     'Sweatshirts': 'Discover comfortable sweatshirts and statement styles for cooler days.',
     'Hoodies': 'Explore easy-to-wear hoodies for casual layering.',
     'Jackets': 'Discover outerwear and jackets for effortless cold-weather styling.',
+    'Shackets': 'Explore versatile shirt-jackets for easy layering and everyday style.',
     'Tracksuits': 'Explore coordinated tracksuits for comfortable off-duty dressing.'
   };
   const collectionDescription = document.getElementById('collectionDescription');
@@ -399,7 +416,7 @@ function renderFreshArrivals(){
  grid.innerHTML=arrivals.map(p=>{
    const title=escapeHtml(p.name||'New Arrival');
    const img=p.image?'<img src="'+escapeHtml(p.image)+'" alt="'+title+'" loading="lazy">':'';
-   const label=/shacket/i.test([p.name,p.type].join(' '))?'CLASSIC SHACKET':/porsche/i.test([p.name,p.type].join(' '))?'PORSCHE SERIES':'NEW ARRIVAL';
+   const label=correctedCategory(p.name,p.type).toUpperCase();
    const slug=String(p.name||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
    const detailSlugs=['armani-shacket','classic-shacket','puma-porsche-series','denim-jacket'];
    const detailHref=detailSlugs.includes(slug)?'/products/'+slug+'.html?driveId='+encodeURIComponent(String(p.id||'').replace(/^drive-/,'')):'#shop';
