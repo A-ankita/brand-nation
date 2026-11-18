@@ -119,6 +119,5 @@ function loadCatalogue(){
  script.src=driveFeed+'?callback='+cb+'&t='+Date.now();
  document.head.appendChild(script);
 }
-document.getElementById('browse').replaceWith(document.getElementById('browse').cloneNode(true));
 document.getElementById('browse').addEventListener('click',async()=>{await buzz();document.getElementById('catalogue').scrollIntoView({behavior:'smooth'});});
 loadCatalogue();
