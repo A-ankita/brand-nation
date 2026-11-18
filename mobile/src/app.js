@@ -126,11 +126,19 @@ function renderCatalogue(){
  catalogueStatus.textContent=filtered.length+' products available. Tap a product to view its photo gallery.';
 }
 function loadCatalogue(){
+ const cached=localStorage.getItem('brandNationCatalogueCache');
+ if(cached){try{const saved=JSON.parse(cached);if(Array.isArray(saved)&&saved.length){catalogue=saved;renderCatalogue();catalogueStatus.textContent='Showing saved products while refreshing the catalogue…';}}catch{}}
  const cb='brandNationAppFeed';
- let completed=false;
- const script=document.createElement('script');
- const timer=setTimeout(()=>finish(false),15000);
- function finish(ok){if(completed)return;completed=true;clearTimeout(timer);script.remove();if(!ok)catalogueStatus.textContent='Live catalogue unavailable. Browse the website to shop.';}
+ let completed=false,attempt=0,timer,script;
+ function request(){
+  attempt++;
+  script=document.createElement('script');
+  timer=setTimeout(()=>finish(false),18000);
+  script.onerror=()=>finish(false);
+  script.src=driveFeed+'?callback='+cb+'&_='+Date.now();
+  document.head.appendChild(script);
+ }
+ function finish(ok){if(completed)return;clearTimeout(timer);script?.remove();if(!ok&&attempt<3){setTimeout(request,attempt*1200);return;}completed=true;if(!ok)catalogueStatus.textContent=catalogue.length?'Live catalogue temporarily unavailable. Showing saved products.':'Catalogue connection unavailable. Tap Shop Collection to browse the website.';}
  window[cb]=payload=>{
   if(!payload||!Array.isArray(payload.items)){finish(false);return;}
   const groups=new Map();
@@ -144,6 +152,7 @@ function loadCatalogue(){
    else if(!groups.get(key).ids.includes(item.id))groups.get(key).ids.push(item.id);
   });
   catalogue=[...groups.values()].sort((a,b)=>categoryOrder.indexOf(a.category)-categoryOrder.indexOf(b.category)||a.name.localeCompare(b.name));
+  try{localStorage.setItem('brandNationCatalogueCache',JSON.stringify(catalogue));}catch{}
   renderCatalogue();
   // Update the four home cards with real images from the live Drive feed.
   featuredGrid.querySelectorAll('[data-slug]').forEach(card=>{
@@ -153,9 +162,7 @@ function loadCatalogue(){
   });
   finish(true);
  };
- script.onerror=()=>finish(false);
- script.src=driveFeed+'?callback='+cb;
- document.head.appendChild(script);
+ request();
 }
 document.getElementById('browse').addEventListener('click',async()=>{await buzz();document.getElementById('catalogue').scrollIntoView({behavior:'smooth'});});
 loadCatalogue();
