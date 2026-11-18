@@ -48,40 +48,46 @@ if (Capacitor.isNativePlatform()) {
 const driveFeed='https://script.google.com/macros/s/AKfycbznN4Z-9Uy34jaw1v6etLQqD13brw9dcPnVnGx6RlrT8wyIZZGrX2klScCrjyPfOcad/exec';
 const categoryOrder=['All','Jackets','Shackets','Tracksuits','Sweatshirts','Hoodies','Knitwear','Shirts','Polo T-Shirts','Jeans','Joggers','Winterwear','Other'];
 const clean=s=>String(s||'').trim();
+const looksLikeFilename=value=>{
+ const v=clean(value).replace(/\\.(?:jpe?g|png|webp|avif)$/i,'').trim();
+ const compact=v.replace(/[\\s_-]/g,'');
+ return /^(?:img|dsc|pxl|mvimg|whatsapp|image)[\\s_-]*\\d+/i.test(v)
+  || /^(?:BN-GH-)?[a-f0-9]{16,}/i.test(v)
+  || /^[a-zA-Z0-9_-]{18,}$/.test(v)
+  || (/^[a-zA-Z0-9_-]{12,}$/.test(v) && /\\d/.test(v) && /[A-Z]/.test(v) && /[a-z]/.test(v))
+  || (/^[a-zA-Z0-9_-]{10,}$/.test(v) && /\\d/.test(v) && !/\\s/.test(v) && /[A-Z]/.test(v) && /[a-z]/.test(v))
+  || (/^[a-zA-Z0-9_-]{10,}$/.test(compact) && /^\\d+[a-zA-Z0-9_-]+$/.test(v));
+};
 const classify=(name,category)=>{
  const n=clean(name).toLowerCase(),c=clean(category).toLowerCase();
- if(/shacket/.test(n))return 'Shackets';
- if(/denim jacket|\\bjacket\\b/.test(n))return 'Jackets';
- if(/tracksuit|track set|co-ord/.test(n))return 'Tracksuits';
- if(/hoodie/.test(n))return 'Hoodies';
- if(/sweatshirt|porsche|911 turbo/.test(n))return 'Sweatshirts';
- if(/jogger|trackpant/.test(n))return 'Joggers';
- if(/\\bjeans?\\b/.test(n))return 'Jeans';
- if(/\\bshirt\\b/.test(n))return 'Shirts';
- if(/polo|t-shirt|tshirt/.test(n))return 'Polo T-Shirts';
- if(/jacket/.test(c))return 'Jackets';
- if(/shacket/.test(c))return 'Shackets';
- if(/sweatshirt/.test(c))return 'Sweatshirts';
- if(/knit|sweater/.test(c))return 'Knitwear';
- return categoryOrder.find(x=>x.toLowerCase()===c)||'Other';
+ const classifyText=t=>{
+  if(/shacket/.test(t))return 'Shackets';
+  if(/jacket|blazer|bomber|denim/.test(t))return 'Jackets';
+  if(/tracksuit|track set|co-ord/.test(t))return 'Tracksuits';
+  if(/hoodie/.test(t))return 'Hoodies';
+  if(/sweatshirt|porsche|911 turbo/.test(t))return 'Sweatshirts';
+  if(/jogger|trackpant/.test(t))return 'Joggers';
+  if(/\\bjeans?\\b/.test(t))return 'Jeans';
+  if(/\\bshirts?\\b|checked shirt|overshirt/.test(t))return 'Shirts';
+  if(/polo|t-shirt|tshirt/.test(t))return 'Polo T-Shirts';
+  if(/knit|sweater|cardigan|pullover/.test(t))return 'Knitwear';
+  return null;
+ };
+ // Explicit descriptive product names override inherited Drive folder categories.
+ const fromName=looksLikeFilename(n)?null:classifyText(n);
+ if(fromName)return fromName;
+ return classifyText(c)||categoryOrder.find(x=>x.toLowerCase()===c)||'Other';
 };
-// Small thumbnails for cards; full-resolution imagery remains on product pages.
-const catalogueName=(item)=>{
+const catalogueName=item=>{
  const explicit=clean(item.productGroup);
  if(explicit && !looksLikeFilename(explicit))return explicit;
- const raw=clean(item.name).replace(/^BN-GH-[a-f0-9]{16}-/i,'').replace(/\.(jpe?g|png|webp|avif)$/i,'').replace(/[_-]+/g,' ').replace(/\b(img|image|photo|dsc|whatsapp)\b/gi,' ').replace(/\b\d{5,}\b/g,' ').replace(/\s+/g,' ').trim();
- const category=classify(raw,item.category);
+ const original=clean(item.name);
+ const raw=original.replace(/^BN-GH-[a-f0-9]{16}-/i,'').replace(/\\.(jpe?g|png|webp|avif)$/i,'').replace(/[_-]+/g,' ').replace(/\\b(img|image|photo|dsc|whatsapp)\\b/gi,' ').replace(/\\b\\d{5,}\\b/g,' ').replace(/\\s+/g,' ').trim();
+ const category=classify(looksLikeFilename(original)?'':raw,item.category);
  const labels={'Jackets':"Men's Jackets",'Shackets':"Men's Shackets",'Tracksuits':"Men's Tracksuits",'Sweatshirts':"Men's Sweatshirts",'Hoodies':"Men's Hoodies",'Knitwear':"Men's Knitwear",'Shirts':"Men's Shirts",'Polo T-Shirts':"Men's Polo T-Shirts",'Jeans':"Men's Jeans",'Joggers':"Men's Joggers",'Winterwear':"Men's Winterwear"};
  const hasArticle=/shacket|jacket|tracksuit|hoodie|sweatshirt|porsche|knit|sweater|shirt|polo|jeans|jogger|henley|cardigan/i.test(raw);
- if(!hasArticle || looksLikeFilename(raw))return labels[category]||'New Arrival';
+ if(looksLikeFilename(original)||looksLikeFilename(raw)||!hasArticle)return labels[category]||'New Arrival';
  return raw.split(' ').slice(0,8).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
-};
-const looksLikeFilename=s=>{
- const v=clean(s);
- return /^(?:img|dsc|pxl|mvimg|whatsapp|image)[\\s_-]*\\d+/i.test(v)
- || /^[a-zA-Z0-9_-]{18,}$/.test(v)
- || /^\\d{6,}/.test(v)
- || /^(?:BN-GH-)?[a-f0-9]{16,}/i.test(v);
 };
 const photo=id=>window.brandNationImage?window.brandNationImage(id,320):'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w320';
 const thumbnailObserver=('IntersectionObserver' in window)?new IntersectionObserver(entries=>{
@@ -111,7 +117,7 @@ function renderCatalogue(){
   const copy=document.createElement('span');copy.className='card-copy';
   const small=document.createElement('small');small.textContent=p.category;
   const strong=document.createElement('strong');strong.textContent=p.name;
-  const link=document.createElement('em');link.textContent='Shop collection →';
+  const link=document.createElement('em');link.textContent='View photos →';
   copy.append(small,strong,link);b.append(img,copy);
   b.addEventListener('click',()=>openGallery(p));
   catalogueGrid.appendChild(b);
@@ -131,7 +137,7 @@ function loadCatalogue(){
   payload.items.forEach(item=>{
    if(!item||!(/^[a-zA-Z0-9_-]{10,}$/).test(String(item.id||'')))return;
    const name=catalogueName(item);
-   const category=classify(name,item.category);
+   const category=classify(clean(item.productGroup)&&!looksLikeFilename(item.productGroup)?item.productGroup:(!looksLikeFilename(item.name)?item.name:''),item.category);
    const group=clean(item.productGroup);
    const key=(group && !looksLikeFilename(group))?category+'::'+group.toLowerCase():'single::'+item.id;
    if(!groups.has(key))groups.set(key,{name,category,id:item.id,ids:[item.id]});
