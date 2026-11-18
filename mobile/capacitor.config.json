@@ -1,0 +1,13 @@
+{
+  "appId": "in.brandnation.shop",
+  "appName": "Brand Nation",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1000
+    }
+  }
+}

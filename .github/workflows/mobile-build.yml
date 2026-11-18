@@ -1,0 +1,51 @@
+name: Brand Nation Android test build
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mobile-app-capacitor]
+    paths: ['mobile/**', '.github/workflows/mobile-build.yml']
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      # GitHub ubuntu-latest already provides Android SDK command-line tools.
+      # setup-android@v3 currently fails attempting to install obsolete SDK 'tools'.
+      - run: echo "ANDROID_HOME=$ANDROID_HOME" && test -d "$ANDROID_HOME"
+      - name: Refresh Cloudinary mapping from main branch
+        run: |
+          curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/A-ankita/brand-nation/main/cloudinary-map.js" -o www/cloudinary-map.js
+          grep -q 'BRAND_NATION_CLOUDINARY_MAP' www/cloudinary-map.js
+      - name: Download official Brand Nation logo
+        run: |
+          curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/A-ankita/brand-nation/main/brand-nation-logo.webp" -o www/brand-nation-logo.webp
+          test -s www/brand-nation-logo.webp
+      - run: python3 -m pip install Pillow
+      - run: npm install --no-audit --no-fund
+      - run: npm run check
+      - run: npm run build
+      - run: npx cap add android
+      - run: npx cap sync android
+      - run: python3 scripts/generate_icons.py
+      - name: Verify newest mobile UI is bundled in Android
+        run: |
+          grep -q 'id="arrivals"' android/app/src/main/assets/public/index.html
+          grep -q 'id="featured-grid"' android/app/src/main/assets/public/index.html
+          grep -q 'Fresh arrivals' android/app/src/main/assets/public/index.html
+      - run: chmod +x android/gradlew
+      - run: ./gradlew assembleDebug
+        working-directory: mobile/android
+      - uses: actions/upload-artifact@v4
+        with:
+          name: brand-nation-android-debug-apk
+          path: mobile/android/app/build/outputs/apk/debug/*.apk
