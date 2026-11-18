@@ -22,6 +22,10 @@ jobs:
       # GitHub ubuntu-latest already provides Android SDK command-line tools.
       # setup-android@v3 currently fails attempting to install obsolete SDK 'tools'.
       - run: echo "ANDROID_HOME=$ANDROID_HOME" && test -d "$ANDROID_HOME"
+      - name: Refresh Cloudinary mapping from main branch
+        run: |
+          curl --fail --location --retry 3 --silent --show-error "https://raw.githubusercontent.com/A-ankita/brand-nation/main/cloudinary-map.js" -o www/cloudinary-map.js
+          grep -q 'BRAND_NATION_CLOUDINARY_MAP' www/cloudinary-map.js
       - run: npm install --no-audit --no-fund
       - run: npm run check
       - run: npm run build
