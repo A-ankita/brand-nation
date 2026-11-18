@@ -65,7 +65,19 @@ const classify=(name,category)=>{
  if(/knit|sweater/.test(c))return 'Knitwear';
  return categoryOrder.find(x=>x.toLowerCase()===c)||'Other';
 };
-const photo=id=>'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w800';
+// Small thumbnails for cards; full-resolution imagery remains on product pages.
+const photo=id=>'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w320';
+const thumbnailObserver=('IntersectionObserver' in window)?new IntersectionObserver(entries=>{
+ entries.forEach(entry=>{if(!entry.isIntersecting)return;const img=entry.target;img.src=img.dataset.src;img.removeAttribute('data-src');thumbnailObserver.unobserve(img);});
+},{rootMargin:'120px 0px'}):null;
+function setThumbnail(img,id,priority=false){
+ img.alt=img.alt||'Product photo';
+ img.decoding='async';
+ img.loading=priority?'eager':'lazy';
+ if(priority){img.fetchPriority='high';img.src=photo(id);}
+ else if(thumbnailObserver){img.dataset.src=photo(id);thumbnailObserver.observe(img);}
+ else img.src=photo(id);
+}
 let catalogue=[],selectedCategory='All';
 const categoryBar=document.getElementById('category-filters');
 const catalogueGrid=document.getElementById('catalogue-grid');
@@ -78,7 +90,7 @@ function renderCatalogue(){
  const filtered=catalogue.filter(p=>selectedCategory==='All'||p.category===selectedCategory);
  filtered.forEach(p=>{
   const b=document.createElement('button');b.type='button';b.className='featured-card';
-  const img=document.createElement('img');img.src=photo(p.id);img.alt=p.name;img.loading='lazy';img.onerror=()=>{img.style.display='none';};
+  const img=document.createElement('img');img.alt=p.name;img.onerror=()=>{img.style.display='none';};
   const copy=document.createElement('span');copy.className='card-copy';
   const small=document.createElement('small');small.textContent=p.category;
   const strong=document.createElement('strong');strong.textContent=p.name;
@@ -86,6 +98,7 @@ function renderCatalogue(){
   copy.append(small,strong,link);b.append(img,copy);
   b.addEventListener('click',()=>browse(site+'#shop'));
   catalogueGrid.appendChild(b);
+  setThumbnail(img,p.id);
  });
  catalogueStatus.textContent=filtered.length+' collections available. Select an item to browse the full website catalogue.';
 }
@@ -111,12 +124,12 @@ function loadCatalogue(){
   featuredGrid.querySelectorAll('[data-slug]').forEach(card=>{
    const item=featured.find(x=>x.slug===card.dataset.slug);
    const match=catalogue.find(p=>clean(p.name).toLowerCase()===item.name.toLowerCase());
-   if(match){const img=document.createElement('img');img.src=photo(match.id);img.alt=item.name;img.loading='lazy';img.onerror=()=>img.remove();card.prepend(img);}
+   if(match){const img=document.createElement('img');img.alt=item.name;img.onerror=()=>img.remove();card.prepend(img);setThumbnail(img,match.id,true);}
   });
   finish(true);
  };
  script.onerror=()=>finish(false);
- script.src=driveFeed+'?callback='+cb+'&t='+Date.now();
+ script.src=driveFeed+'?callback='+cb;
  document.head.appendChild(script);
 }
 document.getElementById('browse').addEventListener('click',async()=>{await buzz();document.getElementById('catalogue').scrollIntoView({behavior:'smooth'});});
