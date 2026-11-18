@@ -26,7 +26,18 @@ document.getElementById('browse').addEventListener('click',()=>browse());
 document.getElementById('home').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
 document.getElementById('share').addEventListener('click',share);
 document.getElementById('shareBottom').addEventListener('click',share);
-document.getElementById('contact').addEventListener('click',()=>browse());
+document.getElementById('contact').addEventListener('click',()=>browse('https://brand-nation.in/#visit'));
+document.getElementById('arrivals').addEventListener('click',async()=>{await buzz();document.getElementById('featured').scrollIntoView({behavior:'smooth'});});
+// Curated native landing-page catalogue. Full inventory stays synced on the website.
+const featured=[
+ {name:'Armani Shacket',category:'Shackets',slug:'armani-shacket'},
+ {name:'Classic Shacket',category:'Shackets',slug:'classic-shacket'},
+ {name:'Puma Porsche Series',category:'Sweatshirts',slug:'puma-porsche-series'},
+ {name:'Denim Jacket',category:'Jackets',slug:'denim-jacket'}
+];
+const featuredGrid=document.getElementById('featured-grid');
+featuredGrid.innerHTML=featured.map(item=>'<button class="featured-card" type="button" data-slug="'+item.slug+'"><span class="card-copy"><small>'+item.category+'</small><strong>'+item.name+'</strong><em>View collection →</em></span></button>').join('');
+featuredGrid.querySelectorAll('[data-slug]').forEach(el=>el.addEventListener('click',()=>browse(site+'products/'+el.dataset.slug+'.html')));
 document.querySelectorAll('[data-url]').forEach(el=>el.addEventListener('click',()=>browse(el.dataset.url)));
 connectivity();
 Network.addListener('networkStatusChange',s=>{offline.hidden=s.connected;}).catch(()=>{});
