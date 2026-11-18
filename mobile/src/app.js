@@ -66,7 +66,7 @@ const classify=(name,category)=>{
  return categoryOrder.find(x=>x.toLowerCase()===c)||'Other';
 };
 // Small thumbnails for cards; full-resolution imagery remains on product pages.
-const photo=id=>'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w320';
+const photo=id=>window.brandNationImage?window.brandNationImage(id,320):'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w320';
 const thumbnailObserver=('IntersectionObserver' in window)?new IntersectionObserver(entries=>{
  entries.forEach(entry=>{if(!entry.isIntersecting)return;const img=entry.target;img.src=img.dataset.src;img.removeAttribute('data-src');thumbnailObserver.unobserve(img);});
 },{rootMargin:'120px 0px'}):null;
