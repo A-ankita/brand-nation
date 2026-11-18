@@ -165,26 +165,27 @@ function loadCatalogue(){
  request();
 }
 document.getElementById('browse').addEventListener('click',async()=>{await buzz();document.getElementById('catalogue').scrollIntoView({behavior:'smooth'});});
-loadCatalogue();
+// Start catalogue loading after the shopping UI is initialized.
 
 const cartDialog=document.getElementById('cart-dialog');
 const cartLines=document.getElementById('cart-lines');
 let cart=[];
 try{const saved=JSON.parse(localStorage.getItem('brandNationCart')||'[]');if(Array.isArray(saved))cart=saved.filter(x=>x&&typeof x.name==='string'&&typeof x.size==='string'&&Number.isInteger(x.quantity)&&x.quantity>0).slice(0,50);}catch{}
 function renderCart(){
- document.getElementById('cart-nav').textContent='Cart ('+cart.reduce((n,x)=>n+x.quantity,0)+')';
+ const nav=document.getElementById('cart-nav');if(nav)nav.textContent='Cart ('+cart.reduce((n,x)=>n+x.quantity,0)+')';
+ if(!cartLines)return;
  cartLines.replaceChildren();
  if(!cart.length){const p=document.createElement('p');p.textContent='Your cart is empty.';cartLines.append(p);}
  cart.forEach((item,index)=>{const row=document.createElement('div');row.className='cart-line';const label=document.createElement('span');label.textContent=item.name+' · '+(item.size||'Size to confirm')+' · Qty '+item.quantity;const remove=document.createElement('button');remove.type='button';remove.textContent='Remove';remove.addEventListener('click',()=>{cart.splice(index,1);saveCart();});row.append(label,remove);cartLines.append(row);});
- document.getElementById('cart-checkout').disabled=!cart.length;
+ const checkout=document.getElementById('cart-checkout');if(checkout)checkout.disabled=!cart.length;
 }
 function saveCart(){try{localStorage.setItem('brandNationCart',JSON.stringify(cart));}catch{}renderCart();}
 function addToCart(product,size){const existing=cart.find(x=>x.id===product.id&&x.size===size);if(existing)existing.quantity++;else cart.push({id:product.id,name:product.name,size,quantity:1});saveCart();}
 function whatsappOrder(items){const lines=items.map((p,i)=>(i+1)+'. '+p.name+' | Size: '+(p.size||'Please confirm')+' | Qty: '+p.quantity);const message='Hi Brand Nation! I would like to order:\\n'+lines.join('\\n')+'\\nPlease confirm stock, prices, delivery and payment details.';const url='https://wa.me/918130687619?text='+encodeURIComponent(message);Browser.open({url}).catch(()=>window.open(url,'_blank','noopener'));}
-document.getElementById('cart-nav').addEventListener('click',()=>{renderCart();cartDialog.showModal();});
-document.getElementById('cart-close').addEventListener('click',()=>cartDialog.close());
-document.getElementById('cart-checkout').addEventListener('click',()=>{if(cart.length)whatsappOrder(cart);});
-cartDialog.addEventListener('click',event=>{if(event.target===cartDialog)cartDialog.close();});
+document.getElementById('cart-nav')?.addEventListener('click',()=>{renderCart();cartDialog?.showModal();});
+document.getElementById('cart-close')?.addEventListener('click',()=>cartDialog?.close());
+document.getElementById('cart-checkout')?.addEventListener('click',()=>{if(cart.length)whatsappOrder(cart);});
+cartDialog?.addEventListener('click',event=>{if(event.target===cartDialog)cartDialog.close();});
 renderCart();
 const gallery=document.getElementById('product-gallery');
 const galleryImage=document.getElementById('gallery-image');
@@ -210,3 +211,4 @@ document.getElementById('gallery-add').addEventListener('click',()=>{if(!activeP
 document.getElementById('gallery-buy').addEventListener('click',()=>{if(!activeProduct)return;whatsappOrder([{name:activeProduct.name,size:document.getElementById('gallery-size').value,quantity:1}]);});
 document.getElementById('gallery-shop').addEventListener('click',()=>browse(site+'#shop'));
 gallery.addEventListener('click',event=>{if(event.target===gallery)gallery.close();});
+loadCatalogue();
