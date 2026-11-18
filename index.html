@@ -400,8 +400,12 @@ function renderFreshArrivals(){
    const title=escapeHtml(p.name||'New Arrival');
    const img=p.image?'<img src="'+escapeHtml(p.image)+'" alt="'+title+'" loading="lazy">':'';
    const label=/shacket/i.test([p.name,p.type].join(' '))?'CLASSIC SHACKET':/porsche/i.test([p.name,p.type].join(' '))?'PORSCHE SERIES':'NEW ARRIVAL';
+   const slug=String(p.name||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+   const detailSlugs=['armani-shacket','classic-shacket','puma-porsche-series','denim-jacket'];
+   const detailHref=detailSlugs.includes(slug)?'/products/'+slug+'.html':'#shop';
+   const fallbackClick=detailSlugs.includes(slug)?'':' onclick="selectedCategory=\\'All Products\\';renderProducts()"';
    const wa='https://wa.me/918130687619?text='+encodeURIComponent('Hi Brand Nation, I am interested in '+(p.name||'this new arrival')+'. Please share available sizes, price and ordering details.');
-   return '<article class="fresh-card"><div class="fresh-media"><span class="fresh-badge">NEW ARRIVAL</span>'+img+'</div><div class="fresh-card-body"><small>'+label+'</small><strong>'+title+'</strong><span>Discover the latest collection · Ask us about sizes and availability</span><div class="fresh-actions"><a class="fresh-shop" href="#shop" onclick="selectedCategory=\'All Products\';renderProducts()">SHOP COLLECTION →</a><a class="fresh-whatsapp" href="'+wa+'" target="_blank" rel="noopener noreferrer">ENQUIRE ON WHATSAPP</a></div></div></article>';
+   return '<article class="fresh-card"><div class="fresh-media"><span class="fresh-badge">NEW ARRIVAL</span>'+img+'</div><div class="fresh-card-body"><small>'+label+'</small><strong>'+title+'</strong><span>Discover the latest collection · Ask us about sizes and availability</span><div class="fresh-actions"><a class="fresh-shop" href="'+detailHref+'"'+fallbackClick+'>SHOP COLLECTION →</a><a class="fresh-whatsapp" href="'+wa+'" target="_blank" rel="noopener noreferrer">ENQUIRE ON WHATSAPP</a></div></div></article>';
  }).join('');
 }
 document.addEventListener('DOMContentLoaded',()=>{renderFreshArrivals();});
