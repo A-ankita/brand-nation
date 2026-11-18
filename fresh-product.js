@@ -11,21 +11,24 @@ if(!target)return;
 const $=id=>document.getElementById(id);
 const escape=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const url=window.BRAND_NATION_DRIVE_SYNC_URL;
+const requestedId=new URLSearchParams(location.search).get('driveId');
+if(requestedId && /^[a-zA-Z0-9_-]{10,}$/.test(requestedId)){$('main-photo').src='https://drive.google.com/thumbnail?id='+encodeURIComponent(requestedId)+'&sz=w1200';}
 $('name').textContent=target;document.title=target+' | Brand Nation';
 $('message').textContent='Checking the live Brand Nation catalogue…';
 if(!url){$('message').textContent='Catalogue connection unavailable. Please enquire on WhatsApp.';return;}
 const cb='brandNationDetailCallback';
+$('main-photo').addEventListener('error',()=>{$('message').textContent='Product photo could not be loaded. Please enquire on WhatsApp.';});
 const script=document.createElement('script');
 let done=false;
 const timer=setTimeout(()=>finish('Catalogue is taking longer than expected. Please enquire on WhatsApp.'),20000);
 function finish(message){if(done)return;done=true;clearTimeout(timer);script.remove();if(message)$('message').textContent=message;}
 window[cb]=function(data){
  if(!data||!Array.isArray(data.items)){finish('Catalogue temporarily unavailable. Please enquire on WhatsApp.');return;}
- const entries=data.items.filter(x=>x&&x.id&&x.productGroup);
+ const entries=data.items.filter(x=>x&&x.id);
  const normalize=s=>String(s||'').trim().toLowerCase().replace(/[^a-z0-9]+/g,' ');
- const matches=entries.filter(x=>normalize(x.name)===normalize(target)||normalize(x.productGroup)===normalize(target));
+ const matches=entries.filter(x=>String(x.id)===requestedId||normalize(x.name)===normalize(target)||normalize(x.productGroup)===normalize(target));
  if(!matches.length){finish('This collection is not currently listed in the live catalogue. Please ask us about availability on WhatsApp.');return;}
- const group=matches.filter(x=>x.productGroup===matches[0].productGroup && x.category===matches[0].category);
+ const group=matches[0].productGroup ? entries.filter(x=>x.productGroup===matches[0].productGroup && x.category===matches[0].category) : matches;
  const items=group.length?group:matches;
  const ids=[...new Set(items.map(x=>x.id))];
  const photos=ids.map(id=>'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w1200');
