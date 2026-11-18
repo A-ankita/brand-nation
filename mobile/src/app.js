@@ -66,6 +66,17 @@ const classify=(name,category)=>{
  return categoryOrder.find(x=>x.toLowerCase()===c)||'Other';
 };
 // Small thumbnails for cards; full-resolution imagery remains on product pages.
+const catalogueName=(item)=>{
+ const explicit=clean(item.productGroup);
+ if(explicit && !looksLikeFilename(explicit))return explicit;
+ const raw=clean(item.name).replace(/^BN-GH-[a-f0-9]{16}-/i,'').replace(/\.(jpe?g|png|webp|avif)$/i,'').replace(/[_-]+/g,' ').replace(/\b(img|image|photo|dsc|whatsapp)\b/gi,' ').replace(/\b\d{5,}\b/g,' ').replace(/\s+/g,' ').trim();
+ const category=classify(raw,item.category);
+ const labels={'Jackets':"Men's Jackets",'Shackets':"Men's Shackets",'Tracksuits':"Men's Tracksuits",'Sweatshirts':"Men's Sweatshirts",'Hoodies':"Men's Hoodies",'Knitwear':"Men's Knitwear",'Shirts':"Men's Shirts",'Polo T-Shirts':"Men's Polo T-Shirts",'Jeans':"Men's Jeans",'Joggers':"Men's Joggers",'Winterwear':"Men's Winterwear"};
+ const hasArticle=/shacket|jacket|tracksuit|hoodie|sweatshirt|porsche|knit|sweater|shirt|polo|jeans|jogger|henley|cardigan/i.test(raw);
+ if(!hasArticle || looksLikeFilename(raw))return labels[category]||'New Arrival';
+ return raw.split(' ').slice(0,8).map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+};
+const looksLikeFilename=s=>/^(?:img|dsc|pxl|mvimg|whatsapp|image)[\s_-]*\d+/i.test(s)||/^[a-f0-9_-]{16,}$/i.test(s)||/^\d{6,}/.test(s);
 const photo=id=>window.brandNationImage?window.brandNationImage(id,320):'https://drive.google.com/thumbnail?id='+encodeURIComponent(id)+'&sz=w320';
 const thumbnailObserver=('IntersectionObserver' in window)?new IntersectionObserver(entries=>{
  entries.forEach(entry=>{if(!entry.isIntersecting)return;const img=entry.target;img.src=img.dataset.src;img.removeAttribute('data-src');thumbnailObserver.unobserve(img);});
@@ -113,7 +124,7 @@ function loadCatalogue(){
   const groups=new Map();
   payload.items.forEach(item=>{
    if(!item||!(/^[a-zA-Z0-9_-]{10,}$/).test(String(item.id||'')))return;
-   const name=clean(item.productGroup||item.name||'New Arrival');
+   const name=catalogueName(item);
    const category=classify(name,item.category);
    const key=category+'::'+name.toLowerCase();
    if(!groups.has(key))groups.set(key,{name,category,id:item.id});
